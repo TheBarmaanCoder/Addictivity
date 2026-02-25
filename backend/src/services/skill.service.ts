@@ -44,12 +44,21 @@ function toResponse(row: typeof skills.$inferSelect): SkillResponse {
   };
 }
 
-export async function listByUserId(userId: string): Promise<SkillResponse[]> {
+export interface ListSkillsQuery {
+  limit?: number;
+  offset?: number;
+}
+
+export async function listByUserId(userId: string, query?: ListSkillsQuery): Promise<SkillResponse[]> {
+  const limit = query?.limit != null ? Math.min(100, Math.max(1, query.limit)) : 100;
+  const offset = Math.max(0, query?.offset ?? 0);
   const rows = await db
     .select()
     .from(skills)
     .where(eq(skills.userId, userId))
-    .orderBy(skills.sortOrder, skills.createdAt);
+    .orderBy(skills.sortOrder, skills.createdAt)
+    .limit(limit)
+    .offset(offset);
   return rows.map(toResponse);
 }
 

@@ -41,6 +41,8 @@ function toTaskResponse(row: typeof tasks.$inferSelect): TaskResponse {
 export interface ListTasksQuery {
   dueDate?: string; // YYYY-MM-DD
   completed?: boolean;
+  limit?: number;
+  offset?: number;
 }
 
 export async function listByUserId(userId: string, query: ListTasksQuery): Promise<TaskResponse[]> {
@@ -51,11 +53,15 @@ export async function listByUserId(userId: string, query: ListTasksQuery): Promi
   if (query.completed !== undefined) {
     conditions.push(eq(tasks.completed, query.completed));
   }
+  const limit = Math.min(100, Math.max(1, query.limit ?? 50));
+  const offset = Math.max(0, query.offset ?? 0);
   const rows = await db
     .select()
     .from(tasks)
     .where(and(...conditions))
-    .orderBy(asc(tasks.dueDate), asc(tasks.createdAt));
+    .orderBy(asc(tasks.dueDate), asc(tasks.createdAt))
+    .limit(limit)
+    .offset(offset);
   return rows.map(toTaskResponse);
 }
 
@@ -192,8 +198,13 @@ export async function completeTask(
     : null;
   if (lastDate) {
     const diffDays = Math.floor((todayStart.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
-    if (diffDays === 1) currentStreak += 1;
-    else if (diffDays > 1) currentStreak = Math.max(0, currentStreak - (diffDays - 1)) + 1;
+    if (diffDays === 0) {
+      currentStreak = currentStreak;
+    } else if (diffDays === 1) {
+      currentStreak += 1;
+    } else if (diffDays > 1) {
+      currentStreak = Math.max(0, currentStreak - (diffDays - 1)) + 1;
+    }
   } else {
     currentStreak = 1;
   }
@@ -208,7 +219,7 @@ export async function completeTask(
   const levelUpBonus = newSkillLevel > oldSkillLevel ? (newSkillLevel - oldSkillLevel) * 10 : 0;
   const timeXP = (minutes / 60) * 5;
   const addedParkXp = levelUpBonus + timeXP;
-  const newParkXp = profile.parkXp + addedParkXp;
+  const newParkXp = Number(profile.parkXp) + addedParkXp;
   const newParkLevel = getParkLevelFromXP(newParkXp);
   const newTotalMinutes = profile.totalMinutesSpent + minutes;
   const newTotalGems = profile.totalGems + gemsEarned;
@@ -352,7 +363,7 @@ export async function completeTask(
         totalGems: finalGems,
         lifetimeGems: finalLifetime,
         totalMinutesSpent: newTotalMinutes,
-        parkXp: newParkXp,
+        parkXp: String(newParkXp),
         parkLevel: newParkLevel,
         unlockedAchievementIds: milestoneResult.unlockedAchievementIds,
         unlockedTitles: milestoneResult.unlockedTitles,
@@ -382,7 +393,7 @@ export async function completeTask(
       totalGems: updatedProfile.totalGems,
       lifetimeGems: updatedProfile.lifetimeGems,
       parkLevel: updatedProfile.parkLevel,
-      parkXp: updatedProfile.parkXp,
+      parkXp: Number(updatedProfile.parkXp),
       totalMinutesSpent: updatedProfile.totalMinutesSpent,
       unlockedAchievementIds: updatedProfile.unlockedAchievementIds,
       unlockedTitles: updatedProfile.unlockedTitles,

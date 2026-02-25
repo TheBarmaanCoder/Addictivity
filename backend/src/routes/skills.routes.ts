@@ -20,9 +20,13 @@ const updateSkillSchema = z.object({
 export async function skillsRoutes(fastify: FastifyInstance, _opts: FastifyPluginOptions): Promise<void> {
   fastify.addHook('preHandler', requireAuth);
 
-  fastify.get('/', async (request, reply) => {
+  fastify.get<{
+    Querystring: { limit?: string; offset?: string };
+  }>('/', async (request, reply) => {
     const user = request.user!;
-    const list = await skillService.listByUserId(user.id);
+    const limit = request.query.limit ? parseInt(request.query.limit, 10) : undefined;
+    const offset = request.query.offset ? parseInt(request.query.offset, 10) : undefined;
+    const list = await skillService.listByUserId(user.id, { limit, offset });
     return reply.status(200).send(list);
   });
 

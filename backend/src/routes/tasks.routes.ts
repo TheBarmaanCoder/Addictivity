@@ -37,12 +37,14 @@ export async function tasksRoutes(fastify: FastifyInstance, _opts: FastifyPlugin
   fastify.addHook('preHandler', requireAuth);
 
   fastify.get<{
-    Querystring: { due_date?: string; completed?: string };
+    Querystring: { due_date?: string; completed?: string; limit?: string; offset?: string };
   }>('/', async (request, reply) => {
     const dueDate = request.query.due_date;
     const completed =
       request.query.completed === 'true' ? true : request.query.completed === 'false' ? false : undefined;
-    const list = await taskService.listByUserId(request.user!.id, { dueDate, completed });
+    const limit = request.query.limit ? parseInt(request.query.limit, 10) : undefined;
+    const offset = request.query.offset ? parseInt(request.query.offset, 10) : undefined;
+    const list = await taskService.listByUserId(request.user!.id, { dueDate, completed, limit, offset });
     return reply.status(200).send(list);
   });
 
