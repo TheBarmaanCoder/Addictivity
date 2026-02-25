@@ -1,0 +1,10 @@
+{
+  "version": "7",
+  "dialect": "pg",
+  "entries": [
+    { "idx": 0, "tag": "0000_initial_auth_and_profile", "when": 1739123456789, "breakpoints": true },
+    { "idx": 1, "tag": "0001_skills", "when": 1739123460000, "breakpoints": true },
+    { "idx": 2, "tag": "0002_tasks", "when": 1739123465000, "breakpoints": true },
+    { "idx": 3, "tag": "0003_task_completions", "when": 1739123470000, "breakpoints": true }
+  ]
+}
