@@ -54,19 +54,30 @@ function isBoosterAlreadyActive(state: AppState, itemId: string): boolean {
 
 const ShopScreen: React.FC<ShopScreenProps> = ({ state, onPurchaseBooster }) => {
   const [skillFocusPickerFor, setSkillFocusPickerFor] = useState<BoosterShopItem | null>(null);
+  const [confirmPurchase, setConfirmPurchase] = useState<BoosterShopItem | null>(null);
 
   const globalLevel = Math.floor(Math.sqrt(state.skills.reduce((acc, s) => acc + s.totalPoints, 0) / 40)) + 1;
   const categories = Array.from(new Set(BOOSTER_SHOP_ITEMS.map(i => i.category)));
 
-  const handleBuy = (item: BoosterShopItem) => {
+  const handleBuyClick = (item: BoosterShopItem) => {
     if (state.totalGems < item.cost) return;
     if (isBoosterAlreadyActive(state, item.id)) return;
     if (item.id === 'skill_focus_7d') {
       setSkillFocusPickerFor(item);
       return;
     }
+    setConfirmPurchase(item);
+  };
+
+  const handleConfirmPurchase = () => {
+    if (!confirmPurchase) return;
     impactMedium();
-    onPurchaseBooster(item);
+    onPurchaseBooster(confirmPurchase);
+    setConfirmPurchase(null);
+  };
+
+  const handleBuy = (item: BoosterShopItem) => {
+    handleBuyClick(item);
   };
 
   const handleSkillSelect = (skill: Skill) => {
@@ -181,9 +192,14 @@ const ShopScreen: React.FC<ShopScreenProps> = ({ state, onPurchaseBooster }) => 
                         <span className={`text-sm font-black ${canAfford ? 'text-txt' : 'text-red-500'}`}>{item.cost}</span>
                       </div>
                     </div>
-                    {!isLocked && (
+                    {isLocked ? (
+                      <div className="flex items-center gap-1.5 px-5 py-2.5 min-h-[44px] rounded-xl font-semibold text-sm bg-slate-100 text-txt-secondary">
+                        <span className="material-symbols-outlined text-base">lock</span>
+                        Locked
+                      </div>
+                    ) : (
                       <button
-                        onClick={() => handleBuy(item)}
+                        onClick={() => handleBuyClick(item)}
                         disabled={!canBuy}
                         className={`px-5 py-2.5 min-h-[44px] rounded-xl font-semibold text-sm transition-all active:scale-[0.97] active:opacity-80 ${
                           canBuy ? 'bg-forest-green text-white' : 'bg-off-white text-txt-secondary cursor-not-allowed'
@@ -199,6 +215,33 @@ const ShopScreen: React.FC<ShopScreenProps> = ({ state, onPurchaseBooster }) => 
           </section>
         ))}
       </main>
+
+      {/* Purchase confirmation modal */}
+      {confirmPurchase && (
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setConfirmPurchase(null)} />
+          <div className="relative bg-surface w-full max-w-sm rounded-t-3xl sm:rounded-3xl shadow-soft p-6 animate-in slide-in-from-bottom-10 duration-300">
+            <h3 className="text-lg font-semibold text-txt mb-2">Confirm purchase?</h3>
+            <p className="text-sm text-txt-secondary mb-4">
+              Spend <strong>{confirmPurchase.cost} gems</strong> on {confirmPurchase.name}?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmPurchase(null)}
+                className="flex-1 py-3 rounded-xl border border-txt-secondary/20 text-txt-secondary font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmPurchase}
+                className="flex-1 py-3 rounded-xl bg-forest-green text-white font-semibold"
+              >
+                Buy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Skill Focus picker modal */}
       {skillFocusPickerFor && (

@@ -89,7 +89,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
       .reduce((acc, t) => acc + (t.minutesSpent || 0), 0);
 
     const weeklyDiff = currentWeekMinutes - prevWeekMinutes;
-    const weeklyTrend = prevWeekMinutes === 0 ? 100 : Math.round((weeklyDiff / prevWeekMinutes) * 100);
+    const hasPrevData = prevWeekMinutes > 0;
+    const weeklyTrend = hasPrevData ? Math.round((weeklyDiff / prevWeekMinutes) * 100) : null;
 
     return {
       lifetimeHours: (lifetimeMinutes / 60).toFixed(1),
@@ -97,14 +98,16 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
       prevWeekHours: (prevWeekMinutes / 60).toFixed(1),
       weeklyDiffHours: (Math.abs(weeklyDiff) / 60).toFixed(1),
       weeklyTrend,
+      hasPrevData,
       isPositiveTrend: weeklyDiff >= 0
     };
   }, [state.tasks, state.skills]);
 
   // --- RADAR DATA ---
-  const maxSkillXP = Math.max(...state.skills.map(s => s.totalPoints));
+  const maxSkillXP = state.skills.length ? Math.max(...state.skills.map(s => s.totalPoints), 1) : 1;
   const maxSkillLevel = getSkillLevel(maxSkillXP);
   const chartMax = 120 * Math.pow(maxSkillLevel + 1, 2);
+  const allSkillsZero = state.skills.every(s => (s.totalPoints ?? 0) === 0);
 
   const radarData = state.skills.map(skill => ({
     subject: skill.name,
@@ -139,10 +142,14 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
             <span className="text-[10px] font-semibold uppercase tracking-widest text-txt-secondary">Weekly Momentum</span>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-2xl font-bold text-txt">{timeStats.currentWeekHours}h</span>
-              <div className={`flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded-full ${timeStats.isPositiveTrend ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
-                <span className="material-symbols-outlined text-xs">{timeStats.isPositiveTrend ? 'trending_up' : 'trending_down'}</span>
-                {Math.abs(timeStats.weeklyTrend)}%
-              </div>
+              {timeStats.hasPrevData ? (
+                <div className={`flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded-full ${timeStats.isPositiveTrend ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                  <span className="material-symbols-outlined text-xs">{timeStats.isPositiveTrend ? 'trending_up' : 'trending_down'}</span>
+                  {Math.abs(timeStats.weeklyTrend ?? 0)}%
+                </div>
+              ) : (
+                <span className="text-[10px] font-bold text-txt-secondary px-1.5 py-0.5">No data</span>
+              )}
             </div>
             <p className="text-[9px] text-txt-secondary mt-1 font-medium">Vs. {timeStats.prevWeekHours}h last week</p>
           </div>
@@ -171,21 +178,29 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
           </div>
           
           <div className="w-full h-full mt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                <PolarGrid stroke="#e2e8f0" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: '#1a3b2b', fontSize: 10, fontWeight: 'bold' }} />
-                <PolarRadiusAxis angle={30} domain={[0, chartMax]} tick={false} axisLine={false} />
-                <Radar
-                  name="Skills"
-                  dataKey="A"
-                  stroke="#e89635"
-                  strokeWidth={2}
-                  fill="#e89635"
-                  fillOpacity={0.5}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
+            {allSkillsZero ? (
+              <div className="w-full h-full flex items-center justify-center">
+                <p className="text-sm text-txt-secondary font-medium text-center px-4">
+                  Start tracking to see your skill radar
+                </p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                  <PolarGrid stroke="#e2e8f0" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#1a3b2b', fontSize: 10, fontWeight: 'bold' }} />
+                  <PolarRadiusAxis angle={30} domain={[0, chartMax]} tick={false} axisLine={false} />
+                  <Radar
+                    name="Skills"
+                    dataKey="A"
+                    stroke="#e89635"
+                    strokeWidth={2}
+                    fill="#e89635"
+                    fillOpacity={0.5}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 

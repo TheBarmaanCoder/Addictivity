@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
@@ -11,7 +12,15 @@ async function build() {
     throw new Error('JWT_SECRET must be set in production');
   }
 
-  const app = Fastify({ logger: true });
+  const app = Fastify({
+    logger: {
+      level: config.nodeEnv === 'production' ? 'info' : 'debug',
+      serializers: {
+        req: (req) => ({ method: req.method, url: req.url }),
+        res: (res) => ({ statusCode: res.statusCode }),
+      },
+    },
+  });
 
   await app.register(cors, {
     origin: config.nodeEnv === 'production'

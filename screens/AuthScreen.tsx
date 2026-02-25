@@ -10,6 +10,7 @@ const AuthScreen: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -165,13 +166,23 @@ const AuthScreen: React.FC = () => {
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-txt-secondary uppercase tracking-wide ml-1">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => { setPassword(e.target.value); clearError(); }}
-                placeholder="••••••••"
-                className="w-full min-h-[44px] h-12 rounded-xl border border-txt-secondary/20 px-4 font-medium text-[17px] focus:border-forest-green focus:ring-2 focus:ring-forest-green/10 focus:outline-none transition-all"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); clearError(); }}
+                  placeholder="••••••••"
+                  className="w-full min-h-[44px] h-12 rounded-xl border border-txt-secondary/20 px-4 pr-12 font-medium text-[17px] focus:border-forest-green focus:ring-2 focus:ring-forest-green/10 focus:outline-none transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-txt-secondary hover:text-txt p-1"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  <span className="material-symbols-outlined text-xl">{showPassword ? 'visibility_off' : 'visibility'}</span>
+                </button>
+              </div>
             </div>
           </div>
 
