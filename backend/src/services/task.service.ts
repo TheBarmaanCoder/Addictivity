@@ -8,6 +8,7 @@ import { taskCompletions } from '../db/schema/task-completions.js';
 import { getStreakMultiplier, getSkillLevel, getParkLevelFromXP } from '../lib/levels.js';
 import { evaluateMilestones } from './milestone.service.js';
 import { BadRequestError, ForbiddenError, NotFoundError, ConflictError } from '../lib/errors.js';
+import { sanitizeText } from '../lib/sanitize.js';
 
 export interface TaskResponse {
   id: string;
@@ -66,7 +67,7 @@ export interface CreateTaskInput {
 }
 
 export async function createTask(userId: string, input: CreateTaskInput): Promise<TaskResponse> {
-  const title = input.title?.trim();
+  const title = sanitizeText(input.title ?? '');
   if (!title || title.length > 200) {
     throw new BadRequestError('Title is required and must be at most 200 characters');
   }
@@ -113,8 +114,8 @@ export async function updateTask(
   }
   const updates: Partial<typeof tasks.$inferInsert> = {};
   if (input.title !== undefined) {
-    const t = input.title.trim();
-    if (t.length === 0 || t.length > 200) throw new BadRequestError('Title must be 1–200 characters');
+    const t = sanitizeText(input.title);
+    if (!t || t.length > 200) throw new BadRequestError('Title must be 1–200 characters');
     updates.title = t;
   }
   if (input.dueDate !== undefined) {

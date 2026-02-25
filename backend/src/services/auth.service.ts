@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm';
+import { eq, and, lt } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../db/index.js';
 import { users, authProviders, profiles, refreshTokens, skills } from '../db/schema/index.js';
@@ -12,6 +12,7 @@ import {
   UnauthorizedError,
   ConflictError,
 } from '../lib/errors.js';
+import { sanitizeText } from '../lib/sanitize.js';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -46,7 +47,8 @@ export async function register(input: RegisterInput): Promise<AuthResult> {
   if (!EMAIL_REGEX.test(email)) {
     throw new BadRequestError('Invalid email address');
   }
-  if (!input.name?.trim()) {
+  const name = sanitizeText(input.name ?? '');
+  if (!name) {
     throw new BadRequestError('Name is required');
   }
   if (input.password.length < 6) {
@@ -70,7 +72,7 @@ export async function register(input: RegisterInput): Promise<AuthResult> {
   await db.transaction(async (tx) => {
     await tx.insert(users).values({
       id: userId,
-      name: input.name.trim(),
+      name,
       createdAt: now,
       updatedAt: now,
     });
@@ -87,7 +89,7 @@ export async function register(input: RegisterInput): Promise<AuthResult> {
 
     await tx.insert(profiles).values({
       userId,
-      userName: input.name.trim(),
+      userName: name,
       updatedAt: now,
     });
 
@@ -122,7 +124,7 @@ export async function register(input: RegisterInput): Promise<AuthResult> {
     accessToken,
     refreshToken,
     expiresIn: 900, // 15 min in seconds
-    user: { id: userId, name: input.name.trim(), email },
+    user: { id: userId, name, email },
   };
 }
 
@@ -197,7 +199,7 @@ export async function refresh(refreshToken: string): Promise<RefreshResult> {
 
   const tokenHash = hashRefreshToken(refreshToken);
   const rows = await db
-    .select({ id: refreshTokens.id, userId: refreshTokens.userId })
+    .select({ id: refreshTokens.id, userId: refreshTokens.userId, expiresAt: refreshTokens.expiresAt })
     .from(refreshTokens)
     .where(eq(refreshTokens.tokenHash, tokenHash))
     .limit(1);
@@ -207,6 +209,10 @@ export async function refresh(refreshToken: string): Promise<RefreshResult> {
   }
 
   const row = rows[0];
+  if (row.expiresAt < new Date()) {
+    await db.delete(refreshTokens).where(eq(refreshTokens.id, row.id));
+    throw new UnauthorizedError('Invalid or expired refresh token');
+  }
   if (row.userId !== payload.sub) {
     throw new UnauthorizedError('Invalid or expired refresh token');
   }
@@ -242,6 +248,17 @@ export async function logout(refreshToken: string): Promise<void> {
 
   const tokenHash = hashRefreshToken(refreshToken);
   await db.delete(refreshTokens).where(eq(refreshTokens.tokenHash, tokenHash));
+}
+
+/**
+ * Delete expired refresh tokens. Call periodically (e.g. on startup and every hour).
+ */
+export async function cleanupExpiredRefreshTokens(): Promise<number> {
+  const deleted = await db
+    .delete(refreshTokens)
+    .where(lt(refreshTokens.expiresAt, new Date()))
+    .returning({ id: refreshTokens.id });
+  return deleted.length;
 }
 
 /**

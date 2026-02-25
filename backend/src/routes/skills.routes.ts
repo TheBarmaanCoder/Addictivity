@@ -37,6 +37,13 @@ export async function skillsRoutes(fastify: FastifyInstance, _opts: FastifyPlugi
     return reply.status(201).send(skill);
   });
 
+  fastify.delete<{
+    Params: { id: string };
+  }>('/:id', async (request, reply) => {
+    await skillService.deleteSkill(request.user!.id, request.params.id);
+    return reply.status(204).send();
+  });
+
   fastify.patch<{
     Params: { id: string };
     Body: z.infer<typeof updateSkillSchema>;

@@ -164,6 +164,26 @@ export async function updateSkill(
   return toResponse(updated);
 }
 
+export async function deleteSkill(userId: string, skillId: string): Promise<void> {
+  const [existing] = await db
+    .select()
+    .from(skills)
+    .where(eq(skills.id, skillId))
+    .limit(1);
+
+  if (!existing) {
+    throw new NotFoundError('Skill not found');
+  }
+  if (existing.userId !== userId) {
+    throw new ForbiddenError('Not allowed to delete this skill');
+  }
+  if (!existing.isCustom) {
+    throw new BadRequestError('Cannot delete a default skill');
+  }
+
+  await db.delete(skills).where(eq(skills.id, skillId));
+}
+
 /** Get a single skill by id; returns null if not found or not owned by user. */
 export async function getSkillByIdAndUser(skillId: string, userId: string): Promise<SkillResponse | null> {
   const [row] = await db

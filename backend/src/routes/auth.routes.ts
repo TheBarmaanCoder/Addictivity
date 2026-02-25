@@ -1,4 +1,5 @@
 import type { FastifyInstance, FastifyPluginOptions } from 'fastify';
+import rateLimit from '@fastify/rate-limit';
 import { z } from 'zod';
 import * as authService from '../services/auth.service.js';
 import { AppError } from '../lib/errors.js';
@@ -23,6 +24,11 @@ const logoutSchema = z.object({
 });
 
 export async function authRoutes(fastify: FastifyInstance, _opts: FastifyPluginOptions): Promise<void> {
+  await fastify.register(rateLimit, {
+    max: 10,
+    timeWindow: '1 minute',
+  });
+
   fastify.post<{
     Body: z.infer<typeof registerSchema>;
   }>('/register', async (request, reply) => {
