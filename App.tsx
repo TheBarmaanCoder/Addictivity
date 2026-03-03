@@ -10,7 +10,6 @@ import HomeScreen from './screens/HomeScreen';
 import AddTaskScreen from './screens/AddTaskScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import SettingsScreen from './screens/SettingsScreen';
-import PlaceholderScreen from './screens/PlaceholderScreen';
 import ThemeSelectionScreen from './screens/ThemeSelectionScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
 import AuthScreen from './screens/AuthScreen';
@@ -18,6 +17,8 @@ import ShopScreen from './screens/ShopScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import MilestoneCelebration from './components/MilestoneCelebration';
 import RewardToast from './components/RewardToast';
+import UndoToast from './components/UndoToast';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const MODAL_VIEWS: ViewType[] = ['addTask', 'themeSelection', 'editProfile'];
 
@@ -52,12 +53,35 @@ const App: React.FC = () => {
 
   // Debounced Firestore save
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingSaveRef = useRef<{ uid: string; state: AppState } | null>(null);
   const saveToFirestore = useCallback((uid: string, state: AppState) => {
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    pendingSaveRef.current = { uid, state };
     saveTimeoutRef.current = setTimeout(() => {
       saveUserData(uid, state).catch((e) => console.error('Firestore save failed:', e));
       saveTimeoutRef.current = null;
+      pendingSaveRef.current = null;
     }, 1000);
+  }, []);
+
+  // Flush pending save on page unload or tab hide to prevent data loss
+  useEffect(() => {
+    const flushPendingSave = () => {
+      if (saveTimeoutRef.current && pendingSaveRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = null;
+        const { uid, state } = pendingSaveRef.current;
+        saveUserData(uid, state).catch((e) => console.error('Firestore save failed:', e));
+        pendingSaveRef.current = null;
+      }
+    };
+    window.addEventListener('beforeunload', flushPendingSave);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') flushPendingSave();
+    });
+    return () => {
+      window.removeEventListener('beforeunload', flushPendingSave);
+    };
   }, []);
 
   // 1. Firebase Auth State (redirect result first so native Google sign-in completes)
@@ -160,7 +184,7 @@ const App: React.FC = () => {
   const handleAddTask = (taskData: Omit<Task, 'id' | 'completed'>) => {
     const newTask: Task = {
       ...taskData,
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       completed: false,
     };
     setAppState(prev => ({
@@ -183,11 +207,26 @@ const App: React.FC = () => {
     setCurrentView('home');
   };
 
+  const [undoDeleteTask, setUndoDeleteTask] = useState<Task | null>(null);
+
   const handleDeleteTask = (taskId: string) => {
+    const task = appState.tasks.find(t => t.id === taskId);
+    if (!task) return;
     setAppState(prev => ({
       ...prev,
       tasks: prev.tasks.filter(t => t.id !== taskId)
     }));
+    setUndoDeleteTask(task);
+  };
+
+  const handleUndoDelete = () => {
+    if (undoDeleteTask) {
+      setAppState(prev => ({
+        ...prev,
+        tasks: [...prev.tasks, undoDeleteTask]
+      }));
+      setUndoDeleteTask(null);
+    }
   };
 
   const getStreakMultiplier = (streak: number) => {
@@ -456,7 +495,7 @@ const App: React.FC = () => {
         if (unit === 'Months') nextDate.setMonth(nextDate.getMonth() + value);
         const nextTask: Task = {
           ...task,
-          id: Date.now().toString() + '-rec',
+          id: crypto.randomUUID(),
           dueDate: nextDate.toISOString(),
           completed: false,
           completedAt: undefined,
@@ -755,51 +794,75 @@ const App: React.FC = () => {
     switch (currentView) {
       case 'home':
         return (
-          <HomeScreen
-            state={appState}
-            onNavigate={changeView}
-            onDeleteTask={handleDeleteTask}
-            onCompleteTask={handleCompleteTask}
-            onEditTask={(task) => {
-              setEditingTask(task);
-              setCurrentView('addTask');
-            }}
-          />
+          <ErrorBoundary>
+            <HomeScreen
+              state={appState}
+              onNavigate={changeView}
+              onDeleteTask={handleDeleteTask}
+              onCompleteTask={handleCompleteTask}
+              onEditTask={(task) => {
+                setEditingTask(task);
+                setCurrentView('addTask');
+              }}
+            />
+          </ErrorBoundary>
         );
       case 'addTask':
         return (
-          <AddTaskScreen
-            skills={appState.skills}
-            initialTask={editingTask}
-            onAddTask={handleAddTask}
-            onUpdateTask={handleUpdateTask}
-            onCancel={() => {
-              setEditingTask(null);
-              setCurrentView('home');
-            }}
-          />
+          <ErrorBoundary>
+            <AddTaskScreen
+              skills={appState.skills}
+              initialTask={editingTask}
+              onAddTask={handleAddTask}
+              onUpdateTask={handleUpdateTask}
+              onCancel={() => {
+                setEditingTask(null);
+                setCurrentView('home');
+              }}
+            />
+          </ErrorBoundary>
         );
       case 'profile':
-        return <ProfileScreen state={appState} onUpdateProfile={handleUpdateProfile} />;
+        return (
+          <ErrorBoundary>
+            <ProfileScreen state={appState} onUpdateProfile={handleUpdateProfile} />
+          </ErrorBoundary>
+        );
       case 'settings':
-        return <SettingsScreen state={appState} onUpdateSkill={handleUpdateSkill} onUpdateProfile={handleUpdateProfile} onNavigate={setCurrentView} onLogout={handleLogout} currentUserEmail={currentUserEmail} />;
+        return (
+          <ErrorBoundary>
+            <SettingsScreen state={appState} onUpdateSkill={handleUpdateSkill} onUpdateProfile={handleUpdateProfile} onNavigate={setCurrentView} onLogout={handleLogout} currentUserEmail={currentUserEmail} />
+          </ErrorBoundary>
+        );
       case 'themeSelection':
-        return <ThemeSelectionScreen currentThemeId={appState.themeId} onSelectTheme={handleUpdateTheme} onBack={() => setCurrentView('settings')} />;
+        return (
+          <ErrorBoundary>
+            <ThemeSelectionScreen currentThemeId={appState.themeId} onSelectTheme={handleUpdateTheme} onBack={() => setCurrentView('settings')} />
+          </ErrorBoundary>
+        );
       case 'editProfile':
-        return <EditProfileScreen state={appState} onUpdateSkill={handleUpdateSkill} onResetSkill={handleResetSkill} onBack={() => setCurrentView('settings')} />;
+        return (
+          <ErrorBoundary>
+            <EditProfileScreen state={appState} onUpdateSkill={handleUpdateSkill} onResetSkill={handleResetSkill} onBack={() => setCurrentView('settings')} />
+          </ErrorBoundary>
+        );
       case 'shop':
-        return <ShopScreen state={appState} onPurchaseBooster={handlePurchaseBooster} />;
-      case 'post':
-        return <PlaceholderScreen title="Post" icon="construction" message="Community posts are under construction." />;
+        return (
+          <ErrorBoundary>
+            <ShopScreen state={appState} onPurchaseBooster={handlePurchaseBooster} />
+          </ErrorBoundary>
+        );
       default:
         return (
-          <HomeScreen
-            state={appState}
-            onNavigate={changeView}
-            onDeleteTask={handleDeleteTask}
-            onCompleteTask={handleCompleteTask}
-            onEditTask={(task) => { setEditingTask(task); setCurrentView('addTask'); }}
-          />
+          <ErrorBoundary>
+            <HomeScreen
+              state={appState}
+              onNavigate={changeView}
+              onDeleteTask={handleDeleteTask}
+              onCompleteTask={handleCompleteTask}
+              onEditTask={(task) => { setEditingTask(task); setCurrentView('addTask'); }}
+            />
+          </ErrorBoundary>
         );
     }
   };
@@ -825,6 +888,13 @@ const App: React.FC = () => {
           xp={rewardToast.xp}
           gems={rewardToast.gems}
           onDone={() => setRewardToast(null)}
+        />
+      )}
+      {undoDeleteTask && (
+        <UndoToast
+          message="Task deleted"
+          onUndo={handleUndoDelete}
+          onDismiss={() => setUndoDeleteTask(null)}
         />
       )}
       <MilestoneCelebration

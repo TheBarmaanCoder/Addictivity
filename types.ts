@@ -135,7 +135,7 @@ export interface AppState {
   };
 }
 
-export type ViewType = 'home' | 'profile' | 'post' | 'shop' | 'settings' | 'addTask' | 'themeSelection' | 'editProfile';
+export type ViewType = 'home' | 'profile' | 'shop' | 'settings' | 'addTask' | 'themeSelection' | 'editProfile';
 
 export interface TaskCompletionData {
   minutes: number;
