@@ -120,5 +120,7 @@ npm run dev
 
 - **"Firebase Setup Required"** – Your `.env.local` is missing or values are wrong. Restart the dev server after changing env vars.
 - **"auth/popup-blocked"** – Allow popups for localhost.
+- **"Google sign-in is not enabled"** – In Firebase Console → Authentication → Sign-in method, click **Google** and toggle **Enable**. Choose a support email and save.
+- **"This domain is not authorized"** – Add your domain (e.g. `localhost`) under Authentication → Settings → Authorized domains.
+- **Generic "auth error" or "Authentication failed"** – Check: (1) Google provider is enabled, (2) your domain is in Authorized domains, (3) popups are allowed. Check the browser console for the exact Firebase error code.
 - **Firestore permission denied** – Ensure your Firestore rules allow `request.auth.uid == userId` for `/users/{userId}`.
-- **CORS / auth domain** – Add your domain under Authentication → Settings → Authorized domains.
