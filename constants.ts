@@ -1,18 +1,13 @@
-import { Skill, AppState, Theme, ShopItem, Achievement, BoosterShopItem, WeeklyGoalTemplate } from './types';
+import { Skill, AppState, ShopItem, Achievement, BoosterShopItem, WeeklyGoalTemplate } from './types';
+import { THEMES } from './lib/theme';
+
+export { THEMES };
 
 // Exported skill foundations
 export const INITIAL_SKILLS: Skill[] = [
   { id: 's1', name: 'Wisdom', totalMinutes: 0, totalPoints: 0, pointsPerMinute: 10, isCustom: false, color: '#3a6b46', icon: 'school', streak: 0, importance: 'important' },
   { id: 's2', name: 'Discipline', totalMinutes: 0, totalPoints: 0, pointsPerMinute: 10, isCustom: false, color: '#e89635', icon: 'self_improvement', streak: 0, importance: 'important' },
   { id: 's3', name: 'Body', totalMinutes: 0, totalPoints: 0, pointsPerMinute: 10, isCustom: false, color: '#f58c63', icon: 'fitness_center', streak: 0, importance: 'important' },
-];
-
-// Defined and exported THEMES for UI customization
-export const THEMES: Theme[] = [
-  { id: 'p1', name: 'Classic Forest', colors: { primary: '#3a6b46', secondary: '#e89635', background: '#f8f9fa', surface: '#ffffff' } },
-  { id: 'p2', name: 'Violet Dusk', colors: { primary: '#71557A', secondary: '#3A345B', background: '#F3C8DD', surface: '#D183A9' } },
-  { id: 'p3', name: 'Olive', colors: { primary: '#4C583E', secondary: '#2C3424', background: '#959581', surface: '#768064' } },
-  { id: 'p4', name: 'Blush Rose', colors: { primary: '#E5A8B1', secondary: '#E1CADA', background: '#E3D5CA', surface: '#F8EDEB' } },
 ];
 
 // Defined and exported INITIAL_STATE for app initialization

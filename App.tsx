@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ViewType, AppState, Task, Skill, ShopItem, Achievement, BoosterShopItem } from './types';
 import { impactMedium, notificationSuccess } from './lib/haptics';
 import { INITIAL_STATE, THEMES, SHOP_ITEMS, ACHIEVEMENTS, BOOSTER_SHOP_ITEMS, WEEKLY_GOALS } from './constants';
+import { applyTheme } from './lib/theme';
 import { onAuthStateChanged, logOut as firebaseLogOut, getRedirectResultIfAny, type User } from './lib/firebaseAuth';
 import { loadUserData, saveUserData, createNewUserDoc } from './lib/firebaseData';
 import { isFirebaseConfigured } from './lib/firebase';
@@ -146,22 +147,7 @@ const App: React.FC = () => {
   }, [appState, isLoaded, isAuthenticated, currentUser, saveToFirestore]);
 
   useEffect(() => {
-    const theme = THEMES.find(t => t.id === appState.themeId) || THEMES[0];
-    const root = document.documentElement;
-    root.style.setProperty('--color-primary', theme.colors.primary);
-    root.style.setProperty('--color-secondary', theme.colors.secondary);
-    root.style.setProperty('--color-background', theme.colors.background);
-    root.style.setProperty('--color-surface', theme.colors.surface);
-    root.style.setProperty('--color-primary-light', theme.colors.primary + '20');
-    root.style.setProperty('--color-secondary-light', theme.colors.secondary + '20');
-    // Compute text color: 50% darker version of secondary
-    const hex = theme.colors.secondary.replace('#', '');
-    const r = Math.round(parseInt(hex.substring(0, 2), 16) * 0.5);
-    const g = Math.round(parseInt(hex.substring(2, 4), 16) * 0.5);
-    const b = Math.round(parseInt(hex.substring(4, 6), 16) * 0.5);
-    const textColor = `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
-    root.style.setProperty('--color-text', textColor);
-    root.style.setProperty('--color-text-secondary', textColor + '99');
+    applyTheme(appState.themeId);
   }, [appState.themeId]);
 
   const handleLogout = () => {
@@ -784,7 +770,7 @@ const App: React.FC = () => {
   // Show onboarding if not completed
   if (!appState.onboardingCompleted) {
     return (
-      <div className="max-w-md mx-auto h-screen bg-off-white shadow-2xl overflow-hidden relative">
+      <div className="max-w-md mx-auto h-screen bg-background shadow-2xl overflow-hidden relative">
         <OnboardingScreen userName={appState.userName} onComplete={handleOnboardingComplete} />
       </div>
     );
@@ -871,7 +857,7 @@ const App: React.FC = () => {
   const viewTransitionClass = isModalView ? 'animate-view-slide' : 'animate-view-fade';
 
   return (
-    <div className="max-w-md mx-auto h-screen bg-off-white relative shadow-2xl overflow-hidden flex flex-col transition-colors duration-300">
+    <div className="max-w-md mx-auto h-screen bg-background relative shadow-2xl overflow-hidden flex flex-col transition-colors duration-300">
       <div ref={mainScrollRef} className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
         <div key={currentView} className={viewTransitionClass}>
           {renderContent()}

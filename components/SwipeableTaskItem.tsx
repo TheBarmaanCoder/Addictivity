@@ -98,7 +98,7 @@ const SwipeableTaskItem: React.FC<SwipeableTaskItemProps> = ({ task, skill, onCo
   const isToday = task.dueDate && isDateToday(new Date(task.dueDate));
   
   const displayDate = task.dueDate 
-    ? isToday ? 'Today' : new Date(task.dueDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })
+    ? new Date(task.dueDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })
     : 'No Date';
 
   return (
@@ -139,7 +139,7 @@ const SwipeableTaskItem: React.FC<SwipeableTaskItemProps> = ({ task, skill, onCo
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        className={`absolute inset-0 px-4 py-3 flex items-center justify-between shadow-card rounded-xl cursor-grab active:cursor-grabbing z-10 bg-forest-green`}
+        className={`absolute inset-0 px-4 py-3 flex items-center justify-between shadow-card rounded-xl cursor-grab active:cursor-grabbing z-10 bg-main border-2 border-main`}
         style={{ 
           transform: `translateX(${offset}px)`,
           transition: isDragging.current ? 'none' : 'transform 0.2s ease-out'
@@ -147,24 +147,24 @@ const SwipeableTaskItem: React.FC<SwipeableTaskItemProps> = ({ task, skill, onCo
       >
         <div className="flex items-center gap-3">
           {skill && (
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-               <span className="material-symbols-outlined text-[20px] text-white" title={skill.name}>
+            <div className="w-10 h-10 rounded-full bg-background/20 flex items-center justify-center shrink-0">
+               <span className="material-symbols-outlined text-[20px] text-background" title={skill.name}>
                 {skill.icon}
               </span>
             </div>
           )}
           <div className="flex flex-col">
-            <span className="font-bold text-[15px] text-white truncate max-w-[150px]">{task.title}</span>
-            <span className="text-[11px] font-medium text-white/70 uppercase tracking-wide">{skill?.name || 'General'}</span>
+            <span className="font-bold text-[15px] text-background truncate max-w-[150px]">{task.title}</span>
+            <span className="text-[11px] font-medium text-background/70 uppercase tracking-wide">{skill?.name || 'General'}</span>
           </div>
         </div>
         
         <div className="flex flex-col items-end">
-            <div className={`text-xs font-bold ${isOverdue ? 'text-warm-orange' : isToday ? 'text-warm-orange' : 'text-white/60'}`}>
+            <div className={`text-xs font-bold ${isOverdue ? 'text-interactive' : isToday ? 'text-interactive' : 'text-background/60'}`}>
               {displayDate}
             </div>
              {task.recurrence && (
-              <span className="text-[10px] text-white/60 mt-1 flex items-center gap-0.5">
+              <span className="text-[10px] text-background/60 mt-1 flex items-center gap-0.5">
                 <span className="material-symbols-outlined text-[12px]">repeat</span>
                 {task.recurrence.value}{task.recurrence.unit[0]}
               </span>

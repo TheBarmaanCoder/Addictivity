@@ -44,7 +44,7 @@ export const DEMO_USER_DATA: Record<string, AppState> = {
     totalGems: 0,
     lifetimeGems: 0,
     totalGemsSpent: 0,
-    themeId: 'p5',
+    themeId: 'p3',
     onboardingCompleted: true,
     tasks: [
         { id: 'b1', title: 'Welcome Back', skillId: 's1', recurrence: null, dueDate: new Date().toISOString(), completed: false }

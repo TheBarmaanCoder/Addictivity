@@ -12,14 +12,25 @@
         theme: {
           extend: {
             colors: {
-              "forest-green": "var(--color-primary)",
-              "forest-light": "var(--color-primary-light)",
-              "warm-orange": "var(--color-secondary)",
-              "light-orange": "var(--color-secondary-light)",
-              "off-white": "var(--color-background)",
-              "surface": "var(--color-surface)",
-              "txt": "var(--color-text)",
-              "txt-secondary": "var(--color-text-secondary)",
+              "main": "var(--main)",
+              "interactive": "var(--interactive)",
+              "secondary": "var(--secondary)",
+              "ternary": "var(--ternary)",
+              "background": "var(--background)",
+              "surface": "var(--surface)",
+              "title": "var(--title)",
+              "subtitle": "var(--subtitle)",
+              "textPrimary": "var(--textPrimary)",
+              "textOnMain": "var(--textOnMain)",
+              "border": "var(--border)",
+              /* Legacy aliases for compatibility */
+              "forest-green": "var(--main)",
+              "forest-light": "var(--main)",
+              "warm-orange": "var(--interactive)",
+              "light-orange": "var(--interactive)",
+              "off-white": "var(--background)",
+              "txt": "var(--textPrimary)",
+              "txt-secondary": "var(--subtitle)",
             },
             fontFamily: {
               "display": ["-apple-system", "BlinkMacSystemFont", "Inter", "sans-serif"]
@@ -47,18 +58,21 @@
       }
     </script>
     <style>
-      body { background-color: var(--color-background); overflow: hidden; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+      body { background-color: var(--background); overflow: hidden; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
       html { padding: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left); }
       :root {
-        /* Default fallback (Classic Forest) */
-        --color-primary: #3a6b46;
-        --color-primary-light: #3a6b4620;
-        --color-secondary: #e89635;
-        --color-secondary-light: #e8963520;
-        --color-background: #f8f9fa;
-        --color-surface: #ffffff;
-        --color-text: #744b1a;
-        --color-text-secondary: #744b1a99;
+        /* Theme tokens - set by applyTheme(), fallback to Classic Forest (p1) */
+        --main: #327039;
+        --interactive: #E89635;
+        --secondary: #EB9C35;
+        --ternary: #F5834F;
+        --background: #FFFFFF;
+        --surface: #FFFFFF;
+        --title: #133020;
+        --subtitle: #C4501B;
+        --textPrimary: #133020;
+        --textOnMain: #FFFFFF;
+        --border: #13302033;
       }
       .bottom-nav-curve {
           border-top-left-radius: 2.5rem;
@@ -106,7 +120,7 @@
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="text-txt font-display min-h-screen">
+    <body class="text-textPrimary font-display min-h-screen">
     <div id="root" class="h-full"></div>
   <script type="module" src="/index.tsx"></script>
 </body>

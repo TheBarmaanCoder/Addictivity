@@ -62,17 +62,17 @@ const MonthCalendarModal: React.FC<MonthCalendarModalProps> = ({ isOpen, onClose
     <div className="fixed inset-0 z-[100] flex items-end justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}></div>
       <div className="relative bg-surface w-full rounded-t-3xl shadow-soft p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] flex flex-col animate-in slide-in-from-bottom-10 duration-200">
-        <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-5" />
+        <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
         
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <button onClick={handlePrevMonth} className="size-11 flex items-center justify-center rounded-full active:bg-off-white text-forest-green transition-colors">
+          <button onClick={handlePrevMonth} className="size-11 flex items-center justify-center rounded-full active:bg-background text-main transition-colors">
             <span className="material-symbols-outlined">chevron_left</span>
           </button>
-          <div className="text-lg font-semibold text-forest-green">
+          <div className="text-lg font-semibold text-main">
             {monthNames[month]} {year}
           </div>
-          <button onClick={handleNextMonth} className="size-11 flex items-center justify-center rounded-full active:bg-off-white text-forest-green transition-colors">
+          <button onClick={handleNextMonth} className="size-11 flex items-center justify-center rounded-full active:bg-background text-main transition-colors">
             <span className="material-symbols-outlined">chevron_right</span>
           </button>
         </div>
@@ -80,7 +80,7 @@ const MonthCalendarModal: React.FC<MonthCalendarModalProps> = ({ isOpen, onClose
         {/* Days Header */}
         <div className="grid grid-cols-7 mb-2">
           {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-            <div key={i} className="text-center text-xs font-bold text-txt-secondary">
+            <div key={i} className="text-center text-xs font-bold text-subtitle">
               {d}
             </div>
           ))}
@@ -118,8 +118,8 @@ const MonthCalendarModal: React.FC<MonthCalendarModalProps> = ({ isOpen, onClose
                 onClick={() => handleDateClick(day)}
                 className={`
                   h-10 w-10 mx-auto rounded-full flex flex-col items-center justify-center transition-all relative
-                  ${isSelected ? 'bg-forest-green text-white shadow-soft' : 
-                    isToday ? 'bg-warm-orange text-white' : 'text-txt active:bg-off-white'}
+                  ${isSelected ? 'bg-main text-textOnMain shadow-soft' : 
+                    isToday ? 'bg-interactive text-textOnMain' : 'text-textPrimary active:bg-background'}
                 `}
               >
                 <span className={`text-sm font-semibold leading-none ${daySkillIds.length > 0 ? 'mt-1' : ''}`}>{day}</span>
@@ -133,12 +133,12 @@ const MonthCalendarModal: React.FC<MonthCalendarModalProps> = ({ isOpen, onClose
                                 <div 
                                     key={sid} 
                                     className={`w-1 h-1 rounded-full ${isToday ? 'bg-surface' : ''}`}
-                                    style={{ backgroundColor: isToday ? 'white' : skill?.color || '#cbd5e1' }} 
+                                    style={{ backgroundColor: isToday ? 'var(--surface)' : skill?.color || 'var(--border)' }} 
                                 />
                             );
                         })}
                         {daySkillIds.length > 3 && (
-                             <div className={`w-1 h-1 rounded-full ${isToday ? 'bg-surface' : 'bg-slate-300'}`} />
+                             <div className={`w-1 h-1 rounded-full ${isToday ? 'bg-surface' : 'bg-border'}`} />
                         )}
                     </div>
                 )}
@@ -149,7 +149,7 @@ const MonthCalendarModal: React.FC<MonthCalendarModalProps> = ({ isOpen, onClose
 
         <button 
           onClick={onClose}
-          className="mt-6 w-full py-3 min-h-[44px] rounded-xl bg-off-white text-txt-secondary font-semibold active:bg-slate-200 transition-colors"
+          className="mt-6 w-full py-3 min-h-[44px] rounded-xl bg-background text-subtitle font-semibold active:bg-border transition-colors"
         >
           Cancel
         </button>

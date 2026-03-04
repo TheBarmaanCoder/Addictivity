@@ -6,7 +6,7 @@ interface LogoProps {
 
 const Logo: React.FC<LogoProps> = ({ className = "w-10 h-10" }) => {
   return (
-    <div className={`${className} flex items-center justify-center select-none`}>
+    <div className={`${className} flex items-center justify-center select-none text-title`}>
       <svg
         viewBox="0 0 874 753"
         fill="none"

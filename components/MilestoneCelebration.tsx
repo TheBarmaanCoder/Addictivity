@@ -26,7 +26,7 @@ const MilestoneCelebration: React.FC<MilestoneCelebrationProps> = ({ achievement
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
-      <div className="absolute inset-0 bg-forest-green/90 backdrop-blur-xl animate-in fade-in duration-500"></div>
+      <div className="absolute inset-0 bg-main/90 backdrop-blur-xl animate-in fade-in duration-500"></div>
       
       {/* Confetti simulation (CSS only) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -45,26 +45,26 @@ const MilestoneCelebration: React.FC<MilestoneCelebrationProps> = ({ achievement
       </div>
 
       <div className="relative w-full max-w-sm bg-surface rounded-[2.5rem] p-8 flex flex-col items-center shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] animate-in zoom-in slide-in-from-bottom-12 duration-500">
-        <div className="w-24 h-24 rounded-3xl bg-forest-green flex items-center justify-center text-white mb-6 shadow-xl rotate-3">
+        <div className="w-24 h-24 rounded-3xl bg-main flex items-center justify-center text-textOnMain mb-6 shadow-xl rotate-3 border-2 border-main">
           <span className="material-symbols-outlined text-6xl">{achievement.icon}</span>
         </div>
 
-        <h3 className="text-xs font-black text-warm-orange uppercase tracking-[0.2em] mb-2">Achievement Unlocked</h3>
-        <h2 className="text-3xl font-black text-forest-green text-center leading-tight mb-4">{achievement.title}</h2>
-        <p className="text-txt-secondary text-center font-medium mb-8">{achievement.description}</p>
+        <h3 className="text-xs font-black text-interactive uppercase tracking-[0.2em] mb-2">Achievement Unlocked</h3>
+        <h2 className="text-3xl font-black text-main text-center leading-tight mb-4">{achievement.title}</h2>
+        <p className="text-subtitle text-center font-medium mb-8">{achievement.description}</p>
 
         <div className="w-full flex flex-col gap-3 mb-8">
-            <div className="bg-off-white p-4 rounded-2xl flex items-center justify-between border border-txt-secondary/20">
-                <span className="text-xs font-bold text-txt-secondary uppercase">Reward</span>
-                <div className="flex items-center gap-1.5 text-warm-orange font-black">
+            <div className="bg-background p-4 rounded-2xl flex items-center justify-between border-2 border-border">
+                <span className="text-xs font-bold text-subtitle uppercase">Reward</span>
+                <div className="flex items-center gap-1.5 text-interactive font-black">
                     <span className="material-symbols-outlined text-xl">diamond</span>
                     {achievement.gemReward} Gems
                 </div>
             </div>
             {achievement.titleReward && (
-              <div className="bg-off-white p-4 rounded-2xl flex items-center justify-between border border-txt-secondary/20">
-                  <span className="text-xs font-bold text-txt-secondary uppercase">New Title</span>
-                  <div className="bg-warm-orange text-white text-[10px] font-black px-3 py-1 rounded-md uppercase tracking-wider">
+              <div className="bg-background p-4 rounded-2xl flex items-center justify-between border-2 border-border">
+                  <span className="text-xs font-bold text-subtitle uppercase">New Title</span>
+                  <div className="bg-interactive text-textOnMain text-[10px] font-black px-3 py-1 rounded-md uppercase tracking-wider">
                       {achievement.titleReward}
                   </div>
               </div>
@@ -77,7 +77,7 @@ const MilestoneCelebration: React.FC<MilestoneCelebrationProps> = ({ achievement
             setShow(false);
             onClose();
           }}
-          className="w-full bg-forest-green text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition-transform"
+          className="w-full bg-main text-textOnMain font-black py-4 rounded-2xl shadow-lg active:scale-95 transition-transform"
         >
           Collect Rewards
         </button>

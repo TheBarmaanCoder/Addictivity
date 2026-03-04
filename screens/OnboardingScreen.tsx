@@ -75,13 +75,13 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
       case 1:
         return (
           <div className="flex flex-col items-center justify-center flex-1 text-center px-8 animate-in fade-in duration-1000">
-            <h1 className="text-4xl font-black text-forest-green mb-6 leading-tight">Your time is<br/>shaping you</h1>
-            <p className="text-txt-secondary font-medium mb-12 leading-relaxed">
+            <h1 className="text-4xl font-black text-main mb-6 leading-tight">Your time is<br/>shaping you</h1>
+            <p className="text-subtitle font-medium mb-12 leading-relaxed">
               Addictivity turns time into growth. Every minute spent on meaningful effort counts toward the person you are becoming.
             </p>
             <button 
               onClick={nextStep}
-              className="w-full py-4 bg-forest-green text-white font-semibold rounded-xl active:opacity-80 active:scale-[0.98] transition-all"
+              className="w-full py-4 bg-main text-textOnMain font-semibold rounded-xl active:opacity-80 active:scale-[0.98] transition-all"
             >
               Start building
             </button>
@@ -90,19 +90,19 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
       case 2:
         return (
           <div className="flex flex-col items-center justify-center flex-1 px-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h2 className="text-2xl font-bold text-txt mb-8 text-center">
+            <h2 className="text-2xl font-bold text-textPrimary mb-8 text-center">
               If you were consistent for 30 minutes a day, what would you want to grow?
             </h2>
             <div className="flex flex-col gap-3 mb-12 w-full">
               {['Learning Japanese', 'Piano practice', 'Deep coding sessions', 'Reading philosophy'].map((example, i) => (
-                <div key={i} className="bg-off-white border border-txt-secondary/20 p-4 rounded-xl text-txt-secondary font-medium italic text-sm">
+                <div key={i} className="bg-background border-2 border-border p-4 rounded-xl text-subtitle font-medium italic text-sm">
                   “{example}”
                 </div>
               ))}
             </div>
             <button 
               onClick={nextStep}
-              className="w-full py-4 bg-forest-green text-white font-semibold rounded-xl active:opacity-80 active:scale-[0.98] transition-all"
+              className="w-full py-4 bg-main text-textOnMain font-semibold rounded-xl active:opacity-80 active:scale-[0.98] transition-all"
             >
               Define my skills
             </button>
@@ -111,8 +111,8 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
       case 3:
         return (
           <div className="flex flex-col items-center justify-center flex-1 px-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h2 className="text-2xl font-bold text-txt mb-2 text-center">Core Foundations</h2>
-            <p className="text-txt-secondary text-sm mb-8 text-center">These always exist and cannot be removed.</p>
+            <h2 className="text-2xl font-bold text-textPrimary mb-2 text-center">Core Foundations</h2>
+            <p className="text-subtitle text-sm mb-8 text-center">These always exist and cannot be removed.</p>
             
             <div className="flex flex-col gap-4 w-full mb-12">
               {[
@@ -120,13 +120,13 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
                 { name: 'Discipline', icon: 'self_improvement', desc: 'Mental strength & habits' },
                 { name: 'Body', icon: 'fitness_center', desc: 'Physical health & vitality' }
               ].map(skill => (
-                <div key={skill.name} className="flex items-center gap-4 bg-surface p-5 rounded-xl border border-txt-secondary/20 shadow-card">
-                  <div className="size-12 rounded-xl bg-forest-green/10 flex items-center justify-center text-forest-green">
+                <div key={skill.name} className="flex items-center gap-4 bg-surface p-5 rounded-xl border-2 border-border shadow-card">
+                  <div className="size-12 rounded-xl bg-main/10 flex items-center justify-center text-main">
                     <span className="material-symbols-outlined text-3xl">{skill.icon}</span>
                   </div>
                   <div>
-                    <h3 className="font-bold text-txt">{skill.name}</h3>
-                    <p className="text-xs text-txt-secondary font-medium">{skill.desc}</p>
+                    <h3 className="font-bold text-textPrimary">{skill.name}</h3>
+                    <p className="text-xs text-subtitle font-medium">{skill.desc}</p>
                   </div>
                 </div>
               ))}
@@ -134,7 +134,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
 
             <button 
               onClick={nextStep}
-              className="w-full py-4 bg-forest-green text-white font-semibold rounded-xl active:opacity-80 active:scale-[0.98] transition-all"
+              className="w-full py-4 bg-main text-textOnMain font-semibold rounded-xl active:opacity-80 active:scale-[0.98] transition-all"
             >
               Add my personal skills
             </button>
@@ -143,15 +143,15 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
       case 4:
         return (
           <div className="flex flex-col flex-1 px-6 pt-4 animate-in fade-in slide-in-from-right-4 duration-500 overflow-y-auto no-scrollbar pb-10">
-            <h2 className="text-2xl font-bold text-txt mb-2">Personal Pursuits</h2>
-            <p className="text-txt-secondary text-sm mb-8">What else defines your journey? Choose 3 unique paths.</p>
+            <h2 className="text-2xl font-bold text-textPrimary mb-2">Personal Pursuits</h2>
+            <p className="text-subtitle text-sm mb-8">What else defines your journey? Choose 3 unique paths.</p>
             
             <div className="space-y-8 mb-12">
               {customSkills.map((cs, idx) => (
                 <div key={idx} className="space-y-3">
-                  <label className="text-[10px] font-black text-forest-green uppercase tracking-widest ml-1">Skill #{idx + 1}</label>
+                  <label className="text-[10px] font-black text-main uppercase tracking-widest ml-1">Skill #{idx + 1}</label>
                   <div className="flex gap-3">
-                    <div className="flex-1 h-14 relative bg-surface border border-txt-secondary/20 rounded-xl px-4 flex items-center shadow-card focus-within:border-forest-green focus-within:ring-2 focus-within:ring-forest-green/10 transition-all">
+                    <div className="flex-1 h-14 relative bg-surface border-2 border-border rounded-xl px-4 flex items-center shadow-card focus-within:border-main focus-within:ring-2 focus-within:ring-main/10 transition-all">
                       <input 
                         value={cs.name}
                         onChange={(e) => {
@@ -159,7 +159,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
                           newSkills[idx].name = e.target.value;
                           setCustomSkills(newSkills);
                         }}
-                        className="w-full bg-transparent border-none focus:ring-0 text-txt font-bold outline-none placeholder:font-normal"
+                        className="w-full bg-transparent border-none focus:ring-0 text-textPrimary font-bold outline-none placeholder:font-normal"
                         placeholder="e.g. Piano, Coding, Japanese..."
                       />
                     </div>
@@ -168,7 +168,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
                          setEditingSkillIndex(idx);
                          setIsIconPickerOpen(true);
                        }}
-                       className="size-14 bg-surface border border-txt-secondary/20 rounded-xl flex items-center justify-center text-forest-green active:bg-slate-50 transition-all shadow-card active:scale-[0.97]"
+                       className="size-14 bg-surface border-2 border-border rounded-xl flex items-center justify-center text-main active:bg-border transition-all shadow-card active:scale-[0.97]"
                     >
                        <span className="material-symbols-outlined text-2xl">{cs.icon}</span>
                     </button>
@@ -178,15 +178,15 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
             </div>
 
             {customSkills.some(s => !s.name.trim()) && (
-              <p className="text-txt-secondary text-sm mb-3 text-center">Give each pursuit a name to continue.</p>
+              <p className="text-subtitle text-sm mb-3 text-center">Give each pursuit a name to continue.</p>
             )}
             <button 
               disabled={customSkills.some(s => !s.name.trim())}
               onClick={nextStep}
               className={`w-full py-4 font-semibold rounded-xl transition-all ${
                 customSkills.some(s => !s.name.trim()) 
-                ? 'bg-off-white text-txt-secondary' 
-                : 'bg-forest-green text-white active:opacity-80 active:scale-[0.98]'
+                ? 'bg-background text-subtitle' 
+                : 'bg-main text-textOnMain active:opacity-80 active:scale-[0.98]'
               }`}
             >
               Continue
@@ -196,16 +196,16 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
       case 5:
         return (
           <div className="flex flex-col items-center justify-center flex-1 px-8 animate-in zoom-in duration-500">
-            <h2 className="text-3xl font-black text-txt mb-4 text-center">The Commitment</h2>
-            <p className="text-txt-secondary text-center font-medium mb-10">
+            <h2 className="text-3xl font-black text-textPrimary mb-4 text-center">The Commitment</h2>
+            <p className="text-subtitle text-center font-medium mb-10">
               You’re not setting goals. You’re choosing what to grow.
             </p>
             
-            <div className="w-full bg-off-white rounded-xl p-6 border border-txt-secondary/20 grid grid-cols-2 gap-3 mb-12">
+            <div className="w-full bg-background rounded-xl p-6 border-2 border-border grid grid-cols-2 gap-3 mb-12">
                {['Wisdom', 'Body', 'Discipline', ...customSkills.map(s => s.name)].map((name, i) => (
                  <div key={i} className="flex items-center gap-2">
-                   <div className="size-2 bg-forest-green rounded-full"></div>
-                   <span className="text-sm font-bold text-txt truncate">{name}</span>
+                   <div className="size-2 bg-main rounded-full"></div>
+                   <span className="text-sm font-bold text-textPrimary truncate">{name}</span>
                  </div>
                ))}
             </div>
@@ -223,33 +223,33 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
 
   if (isTransitioning) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-emerald-950 text-white p-12 animate-in fade-in duration-1000">
+      <div className="flex flex-col items-center justify-center h-full bg-main text-textOnMain p-12 animate-in fade-in duration-1000">
          <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mb-8"></div>
          <h2 className="text-2xl font-bold text-center animate-pulse">Setting up your journey...</h2>
-         <p className="mt-4 text-white/50 text-sm text-center">Preparing your focus space</p>
+         <p className="mt-4 text-textOnMain/50 text-sm text-center">Preparing your focus space</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full relative bg-off-white overflow-hidden flex flex-col">
+    <div className="w-full h-full relative bg-background overflow-hidden flex flex-col">
       {showBackButton && (
         <button
           onClick={prevStep}
-          className="absolute top-[max(0.75rem,env(safe-area-inset-top))] left-4 z-10 size-11 rounded-full bg-white/80 border border-txt-secondary/20 shadow-card flex items-center justify-center text-forest-green active:bg-slate-100 transition-colors"
+          className="absolute top-[max(0.75rem,env(safe-area-inset-top))] left-4 z-10 size-11 rounded-full bg-surface/80 border-2 border-border shadow-card flex items-center justify-center text-main active:bg-border transition-colors"
           aria-label="Go back"
         >
           <span className="material-symbols-outlined text-2xl">arrow_back</span>
         </button>
       )}
       {/* Background decoration */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-slate-100">
-        <div className="h-full bg-forest-green transition-all duration-500" style={{ width: `${(step / 5) * 100}%` }}></div>
+      <div className="absolute top-0 left-0 w-full h-1 bg-border">
+        <div className="h-full bg-main transition-all duration-500" style={{ width: `${(step / 5) * 100}%` }}></div>
       </div>
 
       {/* Brand logo */}
       <div className="pt-[max(0.75rem,env(safe-area-inset-top))] flex justify-center w-full">
-        <Logo className="w-10 h-10 text-forest-green" />
+        <Logo className="w-10 h-10" />
       </div>
 
       {renderStep()}
@@ -259,10 +259,10 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsIconPickerOpen(false)}></div>
           <div className="relative bg-surface w-full max-w-sm h-[70vh] sm:h-auto sm:max-h-[80vh] rounded-t-3xl sm:rounded-3xl shadow-soft flex flex-col animate-in slide-in-from-bottom-10 duration-300">
-             <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mt-3 mb-1" />
+             <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-1" />
              <div className="px-6 py-3 flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-forest-green">Select Icon</h3>
-                <button onClick={() => setIsIconPickerOpen(false)} className="size-9 rounded-full flex items-center justify-center text-txt-secondary active:bg-slate-100 transition-colors">
+                <h3 className="text-lg font-semibold text-main">Select Icon</h3>
+                <button onClick={() => setIsIconPickerOpen(false)} className="size-9 rounded-full flex items-center justify-center text-subtitle active:bg-border transition-colors">
                   <span className="material-symbols-outlined">close</span>
                 </button>
              </div>
@@ -271,7 +271,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
                  <button
                    key={icon}
                    onClick={() => handleIconSelect(icon)}
-                   className="aspect-square min-w-[44px] min-h-[44px] rounded-xl bg-off-white flex items-center justify-center text-txt-secondary active:bg-forest-green active:text-white transition-all"
+                   className="aspect-square min-w-[44px] min-h-[44px] rounded-xl bg-background flex items-center justify-center text-subtitle active:bg-main active:text-textOnMain transition-all"
                  >
                    <span className="material-symbols-outlined text-2xl">{icon}</span>
                  </button>

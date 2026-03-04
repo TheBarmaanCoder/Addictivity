@@ -28,17 +28,9 @@ export interface Task {
   completedAt?: string; 
   minutesSpent?: number; 
 }
+import type { Theme } from './lib/theme';
 
-export interface Theme {
-  id: string;
-  name: string;
-  colors: {
-    primary: string;
-    secondary: string;
-    background: string;
-    surface: string;
-  };
-}
+export type { Theme };
 
 export interface ShopItem {
   id: string;

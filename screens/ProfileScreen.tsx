@@ -11,19 +11,19 @@ interface ProfileScreenProps {
 }
 
 const AchievementCard: React.FC<{ achievement: Achievement; isUnlocked: boolean }> = ({ achievement, isUnlocked }) => (
-  <div className={`flex items-center gap-4 p-4 rounded-xl transition-all ${isUnlocked ? 'bg-surface border border-txt-secondary/20 shadow-card' : 'bg-surface opacity-60'}`}>
-    <div className={`size-11 rounded-xl flex items-center justify-center shrink-0 ${isUnlocked ? 'bg-forest-green/10 text-forest-green' : 'bg-slate-200 text-txt-secondary'}`}>
+  <div className={`flex items-center gap-4 p-4 rounded-xl transition-all border-2 ${isUnlocked ? 'bg-surface border-border shadow-card' : 'bg-surface opacity-60 border-transparent'}`}>
+    <div className={`size-11 rounded-xl flex items-center justify-center shrink-0 ${isUnlocked ? 'bg-main/10 text-main' : 'bg-border text-subtitle'}`}>
       <span className="material-symbols-outlined text-2xl">{achievement.icon}</span>
     </div>
     <div className="flex-1 min-w-0">
       <div className="flex items-center justify-between">
-        <h4 className="text-subhead font-semibold text-txt truncate pr-2">{achievement.title}</h4>
-        {isUnlocked && <span className="material-symbols-outlined text-green-500 text-sm shrink-0">verified</span>}
+        <h4 className="text-subhead font-semibold text-textPrimary truncate pr-2">{achievement.title}</h4>
+        {isUnlocked && <span className="material-symbols-outlined text-interactive text-sm shrink-0">verified</span>}
       </div>
-      <p className="text-overline text-txt-secondary font-medium line-clamp-2">{achievement.description}</p>
+      <p className="text-overline text-subtitle font-medium line-clamp-2">{achievement.description}</p>
     </div>
     <div className={`flex flex-col items-end shrink-0 ${!isUnlocked ? 'opacity-50' : ''}`}>
-        <div className={`flex items-center gap-1 text-xs font-bold ${isUnlocked ? 'text-warm-orange' : 'text-txt-secondary'}`}>
+        <div className={`flex items-center gap-1 text-xs font-bold ${isUnlocked ? 'text-interactive' : 'text-subtitle'}`}>
             <span className="material-symbols-outlined text-[12px]">diamond</span>
             {achievement.gemReward}
         </div>
@@ -121,9 +121,9 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
   return (
     <div className="flex flex-col w-full pb-24">
       <header className="relative w-full max-w-4xl mx-auto px-6 pt-[max(1rem,env(safe-area-inset-top))] pb-2 pr-14">
-        <h1 className="text-3xl font-bold text-warm-orange">Stats</h1>
+        <h1 className="text-3xl font-bold text-interactive">Stats</h1>
         <div className="absolute top-[max(1rem,env(safe-area-inset-top))] right-6 w-10 h-10 flex items-center justify-center">
-          <Logo className="w-10 h-10 text-forest-green opacity-80" />
+          <Logo className="w-10 h-10 opacity-80" />
         </div>
       </header>
 
@@ -131,71 +131,71 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
         
         {/* Time Insights Section */}
         <div className="w-full grid grid-cols-2 gap-3">
-          <div className="bg-forest-green rounded-xl p-4 text-white shadow-soft">
+          <div className="bg-main rounded-xl p-4 text-textOnMain shadow-soft border-2 border-main">
             <span className="text-[10px] font-semibold uppercase tracking-widest opacity-70">Total Invested</span>
             <div className="flex items-baseline gap-1 mt-1">
               <span className="text-3xl font-bold">{timeStats.lifetimeHours}</span>
               <span className="text-sm font-medium opacity-80">hrs</span>
             </div>
           </div>
-          <div className="bg-surface border border-txt-secondary/20 rounded-xl p-4 shadow-card">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-txt-secondary">Weekly Momentum</span>
+          <div className="bg-surface border-2 border-border rounded-xl p-4 shadow-card">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-subtitle">Weekly Momentum</span>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-2xl font-bold text-txt">{timeStats.currentWeekHours}h</span>
+              <span className="text-2xl font-bold text-textPrimary">{timeStats.currentWeekHours}h</span>
               {timeStats.hasPrevData ? (
                 <div className={`flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded-full ${timeStats.isPositiveTrend ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
                   <span className="material-symbols-outlined text-xs">{timeStats.isPositiveTrend ? 'trending_up' : 'trending_down'}</span>
                   {Math.abs(timeStats.weeklyTrend ?? 0)}%
                 </div>
               ) : (
-                <span className="text-[10px] font-bold text-txt-secondary px-1.5 py-0.5">No data</span>
+                <span className="text-[10px] font-bold text-subtitle px-1.5 py-0.5">No data</span>
               )}
             </div>
-            <p className="text-[9px] text-txt-secondary mt-1 font-medium">Vs. {timeStats.prevWeekHours}h last week</p>
+            <p className="text-[9px] text-subtitle mt-1 font-medium">Vs. {timeStats.prevWeekHours}h last week</p>
           </div>
         </div>
 
         {/* Radar Chart Card */}
-        <div className="w-full bg-surface rounded-xl shadow-card p-4 flex flex-col items-center relative border border-txt-secondary/20 h-[360px]">
+        <div className="w-full bg-surface rounded-xl shadow-card p-4 flex flex-col items-center relative border-2 border-border h-[360px]">
           <div className="absolute top-4 left-6 flex flex-col z-10">
-            <span className="text-xs font-semibold text-txt-secondary uppercase tracking-wider">Global Level</span>
+            <span className="text-xs font-semibold text-subtitle uppercase tracking-wider">Global Level</span>
             <div className="flex items-end gap-2 mt-0.5">
-                <span className="text-4xl font-bold text-forest-green leading-none">{globalLevel}</span>
+                <span className="text-4xl font-bold text-main leading-none">{globalLevel}</span>
                 <div 
-                    className="relative w-3 h-8 bg-slate-100 rounded-full overflow-hidden mb-0.5" 
+                    className="relative w-3 h-8 bg-border rounded-full overflow-hidden mb-0.5" 
                     title={`${xpProgressInLevel} / ${xpRequiredForCurrentLevel} XP to next level`}
                 >
                     <div 
-                        className="absolute bottom-0 left-0 right-0 bg-warm-orange transition-all duration-500 rounded-full"
+                        className="absolute bottom-0 left-0 right-0 bg-interactive transition-all duration-500 rounded-full"
                         style={{ height: `${levelProgressPercent}%` }}
                     ></div>
                 </div>
             </div>
           </div>
           <div className="absolute top-4 right-6 flex flex-col items-end text-right z-10">
-            <span className="text-xs font-semibold text-txt-secondary uppercase tracking-wider">Rank</span>
-            <span className="text-sm font-bold text-warm-orange">{rankName}</span>
+            <span className="text-xs font-semibold text-subtitle uppercase tracking-wider">Rank</span>
+            <span className="text-sm font-bold text-interactive">{rankName}</span>
           </div>
           
           <div className="w-full h-full mt-2">
             {allSkillsZero ? (
               <div className="w-full h-full flex items-center justify-center">
-                <p className="text-sm text-txt-secondary font-medium text-center px-4">
+                <p className="text-sm text-subtitle font-medium text-center px-4">
                   Start tracking to see your skill radar
                 </p>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                  <PolarGrid stroke="#e2e8f0" />
-                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#1a3b2b', fontSize: 10, fontWeight: 'bold' }} />
+                  <PolarGrid stroke="var(--border)" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--title)', fontSize: 10, fontWeight: 'bold' }} />
                   <PolarRadiusAxis angle={30} domain={[0, chartMax]} tick={false} axisLine={false} />
                   <Radar
                     name="Skills"
                     dataKey="A"
-                    stroke="#e89635"
+                    stroke="var(--interactive)"
                     strokeWidth={2}
-                    fill="#e89635"
+                    fill="var(--interactive)"
                     fillOpacity={0.5}
                   />
                 </RadarChart>
@@ -207,10 +207,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
         {/* Skill Breakdown */}
         <div className="w-full">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-forest-green font-bold text-lg">Skill Breakdown</h3>
+            <h3 className="text-main font-bold text-lg">Skill Breakdown</h3>
             <button 
               onClick={() => setIsHistoryOpen(true)}
-              className="text-xs font-semibold text-warm-orange hover:text-orange-600 transition-colors"
+              className="text-xs font-semibold text-interactive transition-colors"
             >
               View History
             </button>
@@ -227,18 +227,18 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
               const bonusText = getStreakMultiplierText(skill.streak || 0);
               
               return (
-                <div key={skill.id} className="bg-surface p-3 rounded-xl border border-txt-secondary/20 shadow-card flex flex-col h-full">
+                <div key={skill.id} className="bg-surface p-3 rounded-xl border-2 border-border shadow-card flex flex-col h-full">
                   <div className="flex justify-between items-start mb-2">
                     <div className="size-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${skill.color}15`, color: skill.color }}>
                       <span className="material-symbols-outlined text-[18px]">{skill.icon}</span>
                     </div>
                     <div className="flex flex-col items-end">
-                      <p className="text-[10px] font-black text-forest-green uppercase">Lvl {currentLvl}</p>
-                      <span className="text-[9px] font-bold text-txt-secondary">{skillHours}h</span>
+                    <p className="text-[10px] font-black text-main uppercase">Lvl {currentLvl}</p>
+                    <span className="text-[9px] font-bold text-subtitle">{skillHours}h</span>
                     </div>
                   </div>
                   <div className="flex flex-col flex-1 mb-2">
-                    <p className="text-[11px] font-bold text-txt uppercase truncate">{skill.name}</p>
+                    <p className="text-[11px] font-bold text-textPrimary uppercase truncate">{skill.name}</p>
                     <div className="flex gap-1">
                       {(skill.streak || 0) > 0 && (
                         <div className="flex items-center text-[9px] font-black text-orange-600 bg-orange-50 px-1 py-0.5 rounded-md leading-none">
@@ -250,7 +250,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
                     </div>
                   </div>
                   <div className="mt-auto">
-                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="w-full h-1.5 bg-border rounded-full overflow-hidden">
                        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${skillPercent}%`, backgroundColor: skill.color }}></div>
                     </div>
                   </div>
@@ -262,7 +262,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
 
         {/* Milestones & Achievements */}
         <div className="w-full">
-          <h3 className="text-forest-green font-bold text-lg mb-4">Milestones</h3>
+          <h3 className="text-main font-bold text-lg mb-4">Milestones</h3>
           <div className="grid grid-cols-1 gap-3">
              {/* Unlocked Section */}
              {unlockedList.length > 0 ? (
@@ -271,8 +271,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
                 ))
              ) : (
                 <div className="p-6 rounded-xl bg-surface text-center flex flex-col items-center mb-2">
-                    <span className="material-symbols-outlined text-txt-secondary text-3xl mb-2">emoji_events</span>
-                    <p className="text-txt-secondary text-sm font-medium">No milestones unlocked yet.</p>
+                    <span className="material-symbols-outlined text-subtitle text-3xl mb-2">emoji_events</span>
+                    <p className="text-subtitle text-sm font-medium">No milestones unlocked yet.</p>
                 </div>
              )}
 
@@ -281,7 +281,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
                 <div className="w-full mt-2">
                     <button 
                         onClick={() => setShowLocked(!showLocked)}
-                        className="w-full py-3 min-h-[44px] flex items-center justify-center gap-2 text-xs font-semibold text-txt-secondary bg-surface rounded-xl active:bg-slate-100 transition-colors"
+                        className="w-full py-3 min-h-[44px] flex items-center justify-center gap-2 text-xs font-semibold text-subtitle bg-surface rounded-xl active:bg-border transition-colors"
                     >
                         <span>{showLocked ? 'Hide Locked Milestones' : `Show Locked Milestones (${lockedList.length})`}</span>
                         <span className={`material-symbols-outlined text-base transition-transform duration-200 ${showLocked ? 'rotate-180' : ''}`}>expand_more</span>

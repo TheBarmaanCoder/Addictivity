@@ -104,21 +104,21 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, state }) =
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}></div>
       
       <div className="relative bg-surface w-full max-w-4xl h-[85vh] rounded-t-3xl sm:rounded-3xl shadow-soft overflow-hidden flex flex-col animate-in slide-in-from-bottom-10 duration-300">
-        <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mt-3 mb-1 sm:hidden" />
+        <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-1 sm:hidden" />
         {/* Header */}
-        <div className="px-6 py-5 border-b border-txt-secondary/20 flex items-center justify-between bg-surface sticky top-0 z-10">
+        <div className="px-6 py-5 border-b-2 border-border flex items-center justify-between bg-surface sticky top-0 z-10">
           <div>
-            <h3 className="text-lg font-semibold text-forest-green">Growth Journey</h3>
-            <p className="text-[11px] font-medium text-txt-secondary uppercase tracking-wider mt-0.5">Cumulative Hours per Skill</p>
+            <h3 className="text-lg font-semibold text-main">Growth Journey</h3>
+            <p className="text-[11px] font-medium text-subtitle uppercase tracking-wider mt-0.5">Cumulative Hours per Skill</p>
           </div>
           
-          <div className="flex bg-slate-100 p-1 rounded-xl">
+          <div className="flex bg-border p-1 rounded-xl">
             {(['Day', 'Month', 'Year'] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => setScale(s)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  scale === s ? 'bg-surface text-forest-green shadow-card' : 'text-txt-secondary'
+                  scale === s ? 'bg-surface text-main shadow-card' : 'text-subtitle'
                 }`}
               >
                 {s}
@@ -126,7 +126,7 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, state }) =
             ))}
           </div>
 
-          <button onClick={onClose} className="size-10 rounded-full active:bg-slate-100 flex items-center justify-center text-txt-secondary transition-colors">
+          <button onClick={onClose} className="size-10 rounded-full active:bg-border flex items-center justify-center text-subtitle transition-colors">
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
@@ -134,7 +134,7 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, state }) =
         {/* Chart Content */}
         <div className="flex-1 p-4 md:p-8">
           {chartData.length === 0 ? (
-            <div className="w-full h-full flex flex-col items-center justify-center text-txt-secondary gap-4">
+            <div className="w-full h-full flex flex-col items-center justify-center text-subtitle gap-4">
               <span className="material-symbols-outlined text-5xl">trending_up</span>
               <p className="text-sm font-medium text-center">Complete tasks to see your growth over time.</p>
             </div>
@@ -142,18 +142,18 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, state }) =
             <div className="w-full h-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                   <XAxis 
                     dataKey="name" 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }}
+                    tick={{ fontSize: 11, fill: 'var(--subtitle)', fontWeight: 600 }}
                     dy={10}
                   />
                   <YAxis 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }}
+                    tick={{ fontSize: 11, fill: 'var(--subtitle)', fontWeight: 600 }}
                     tickFormatter={(val) => `${val}h`}
                   />
                   <Tooltip 
@@ -190,8 +190,8 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, state }) =
         </div>
 
         {/* Footer info */}
-        <div className="px-8 py-4 bg-off-white border-t border-txt-secondary/20">
-           <p className="text-[10px] text-center text-txt-secondary font-bold uppercase tracking-widest">
+        <div className="px-8 py-4 bg-background border-t-2 border-border">
+           <p className="text-[10px] text-center text-subtitle font-bold uppercase tracking-widest">
              Visualize your consistency and see how far you've come.
            </p>
         </div>

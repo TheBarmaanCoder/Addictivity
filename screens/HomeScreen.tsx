@@ -139,21 +139,21 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
     <div className="flex flex-col w-full pb-24">
       {/* Refined Header */}
       <header className="relative px-6 pt-[max(1rem,env(safe-area-inset-top))] pb-4 pr-14">
-        <h2 className="text-display font-bold text-forest-green truncate">{state.userName}</h2>
+        <h2 className="text-display font-bold text-title truncate">{state.userName}</h2>
         <div className="absolute top-[max(1rem,env(safe-area-inset-top))] right-6 w-10 h-10 flex items-center justify-center">
-          <Logo className="w-10 h-10 text-forest-green opacity-80" />
+          <Logo className="w-10 h-10 opacity-80" />
         </div>
       </header>
 
       {showStreakBanner && (
         <div className="px-6 mb-2">
-          <div className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl ${completedToday ? 'bg-forest-green/10 border border-forest-green/20' : 'bg-warm-orange/15 border border-warm-orange/30'}`}>
-            <span className="material-symbols-outlined text-warm-orange text-xl">local_fire_department</span>
-            <span className="text-body font-semibold text-txt">
+          <div className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 ${completedToday ? 'bg-main/10 border-main/20' : 'bg-interactive/15 border-interactive/30'}`}>
+            <span className="material-symbols-outlined text-interactive text-xl">local_fire_department</span>
+            <span className="text-body font-semibold text-textPrimary">
               {maxStreak} day{maxStreak !== 1 ? 's' : ''} streak
             </span>
             {!completedToday && (
-              <span className="text-caption text-txt-secondary font-medium">— Don&apos;t break it!</span>
+              <span className="text-caption text-subtitle font-medium">— Don&apos;t break it!</span>
             )}
           </div>
         </div>
@@ -162,15 +162,15 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
       <div className="px-6 flex flex-col gap-6">
         {/* Toolbar */}
         <div className="w-full flex flex-col gap-4">
-          <div className="h-[1px] bg-slate-200 w-full" />
+          <div className="h-[1px] bg-border w-full" />
           <div className="flex justify-between px-4">
-            <button onClick={() => { impactLight(); selectionChanged(); setIsCalendarOpen(true); }} className="size-11 rounded-full bg-surface flex items-center justify-center text-forest-green active:bg-slate-200 active:scale-95 transition-all">
+            <button onClick={() => { impactLight(); selectionChanged(); setIsCalendarOpen(true); }} className="size-11 rounded-full bg-surface flex items-center justify-center text-main active:bg-border active:scale-95 transition-all">
               <span className="material-symbols-outlined text-[24px]">calendar_today</span>
             </button>
-            <button onClick={() => { impactLight(); onNavigate('addTask'); }} className="size-11 rounded-full bg-forest-green flex items-center justify-center text-white active:opacity-80 active:scale-95 transition-all shadow-soft">
+            <button onClick={() => { impactLight(); onNavigate('addTask'); }} className="size-11 rounded-full bg-main flex items-center justify-center text-textOnMain active:opacity-80 active:scale-95 transition-all shadow-soft">
               <span className="material-symbols-outlined text-[28px]">add</span>
             </button>
-            <button onClick={() => { impactLight(); selectionChanged(); setIsFilterOpen(true); }} className={`size-11 rounded-full flex items-center justify-center transition-all active:scale-95 ${sortBy === 'skill' ? 'bg-forest-green text-white active:opacity-80' : 'bg-surface text-forest-green active:bg-slate-200'}`} aria-label="Sort" title="Sort">
+            <button onClick={() => { impactLight(); selectionChanged(); setIsFilterOpen(true); }} className={`size-11 rounded-full flex items-center justify-center transition-all active:scale-95 ${sortBy === 'skill' ? 'bg-main text-textOnMain active:opacity-80' : 'bg-surface text-main active:bg-border'}`} aria-label="Sort" title="Sort">
               <span className="material-symbols-outlined text-[24px]">filter_alt</span>
             </button>
           </div>
@@ -178,7 +178,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
 
         {/* Draggable Calendar Strip */}
         <div 
-          className="flex justify-between items-center bg-surface p-2 rounded-xl shadow-sm border border-txt-secondary/20 touch-none select-none cursor-grab active:cursor-grabbing overflow-hidden"
+          className="flex justify-between items-center bg-surface p-2 rounded-xl shadow-sm border-2 border-border touch-none select-none cursor-grab active:cursor-grabbing overflow-hidden"
           onMouseDown={(e) => handleDragStart(e.clientX)}
           onMouseMove={(e) => handleDragMove(e.clientX)}
           onMouseUp={handleDragEnd}
@@ -200,21 +200,21 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
                      setSelectedDate(date);
                    }
                 }}
-                className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] h-14 rounded-xl transition-all ${isSelected ? 'bg-forest-green text-white shadow-soft' : 'text-txt-secondary active:bg-slate-100'}`}
+                className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] h-14 rounded-xl transition-all border-2 ${isSelected ? 'bg-main text-background shadow-soft border-main' : 'text-textPrimary active:bg-border border-transparent'}`}
               >
                 <span className="text-overline font-bold uppercase pointer-events-none">{date.toLocaleDateString('en-US', { weekday: 'narrow' })}</span>
-                <span className={`text-body font-bold pointer-events-none ${isToday && !isSelected ? 'text-warm-orange' : ''}`}>{date.getDate()}</span>
-                {hasTask && !isSelected && <div className="w-1 h-1 bg-warm-orange rounded-full mt-0.5 pointer-events-none"></div>}
+                <span className={`text-body font-bold pointer-events-none ${isToday && !isSelected ? 'text-interactive' : ''}`}>{date.getDate()}</span>
+                {hasTask && !isSelected && <div className="w-1 h-1 bg-interactive rounded-full mt-0.5 pointer-events-none"></div>}
               </button>
             );
           })}
         </div>
-        <p className="text-overline text-txt-secondary text-center mt-1">Swipe to change day</p>
+        <p className="text-overline text-textPrimary text-center mt-1">Swipe to change day</p>
 
         {/* Task List */}
         <div className="w-full flex flex-col min-h-[200px]">
           {filteredTasks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-txt-secondary gap-4">
+            <div className="flex flex-col items-center justify-center h-40 text-subtitle gap-4">
               <span className="material-symbols-outlined text-4xl">task_alt</span>
               <p>No tasks for this day.</p>
             </div>
@@ -227,30 +227,31 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
 
         {/* Chart Section */}
         <div className="w-full flex flex-col gap-4 mt-2">
+          <div className="h-[1px] bg-border w-full" />
           <div className="flex items-center justify-between w-full">
-            <h3 className="text-forest-green font-bold text-title">Time Spent</h3>
+            <h3 className="text-subtitle font-bold text-title">Time Spent</h3>
             <div className="flex bg-surface p-1 rounded-xl">
                {(['Week', 'Month', 'Year'] as const).map(view => (
-                  <button key={view} onClick={() => { impactLight(); selectionChanged(); setAnalysisView(view); }} className={`px-3 py-1.5 rounded-lg text-caption font-semibold transition-all ${analysisView === view ? 'bg-surface shadow-card text-forest-green' : 'text-txt-secondary active:text-txt-secondary'}`}>
+                  <button key={view} onClick={() => { impactLight(); selectionChanged(); setAnalysisView(view); }} className={`px-3 py-1.5 rounded-lg text-caption font-semibold transition-all ${analysisView === view ? 'bg-surface shadow-card text-main' : 'text-subtitle active:text-subtitle'}`}>
                     {view}
                   </button>
                ))}
             </div>
           </div>
-          <div className="w-full bg-surface border border-txt-secondary/20 rounded-xl p-6 shadow-soft">
+          <div className="w-full bg-surface border-2 border-border rounded-xl p-6 shadow-soft">
             <div className="mb-4">
-              <p className="text-caption font-semibold text-txt-secondary mb-1">Total {analysisView === 'Week' ? 'Last 7 Days' : analysisView === 'Month' ? 'This Month' : 'This Year'}</p>
-              <h2 className="text-display font-bold text-txt">{totalHours}<span className="text-body text-txt-secondary font-medium ml-1">hrs</span></h2>
+              <p className="text-caption font-semibold text-subtitle mb-1">Total {analysisView === 'Week' ? 'Last 7 Days' : analysisView === 'Month' ? 'This Month' : 'This Year'}</p>
+              <h2 className="text-display font-bold text-textPrimary">{totalHours}<span className="text-body text-subtitle font-medium ml-1">hrs</span></h2>
             </div>
             <div className="h-48 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                   <XAxis dataKey="id" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8'}} dy={10} interval={analysisView === 'Month' ? 2 : 0} tickFormatter={(val) => { const item = chartData.find(d => d.id === val); return item ? item.label : val; }} />
-                   <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94a3b8'}} width={25} />
+                   <XAxis dataKey="id" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: 'var(--subtitle)'}} dy={10} interval={analysisView === 'Month' ? 2 : 0} tickFormatter={(val) => { const item = chartData.find(d => d.id === val); return item ? item.label : val; }} />
+                   <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: 'var(--subtitle)'}} width={25} />
                    <Tooltip cursor={{fill: 'transparent'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} formatter={(value: number) => [`${value} hrs`, 'Time Spent']} />
                    <Bar dataKey="hours" radius={[4, 4, 0, 0]}>
                       {chartData.map((entry, index) => (
-                        <Cell key={` cell-${index}`} fill={index % 2 === 0 ? 'var(--color-primary)' : 'var(--color-secondary)'} />
+                        <Cell key={` cell-${index}`} fill={index % 2 === 0 ? 'var(--main)' : 'var(--interactive)'} />
                       ))}
                    </Bar>
                 </BarChart>
