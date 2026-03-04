@@ -121,7 +121,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
   return (
     <div className="flex flex-col w-full pb-24">
       <header className="relative w-full max-w-4xl mx-auto px-6 pt-[max(1rem,env(safe-area-inset-top))] pb-2 pr-14">
-        <h1 className="text-3xl font-bold text-interactive">Stats</h1>
+        <h1 className="text-3xl font-bold text-title">Stats</h1>
         <div className="absolute top-[max(1rem,env(safe-area-inset-top))] right-6 w-10 h-10 flex items-center justify-center">
           <Logo className="w-10 h-10 opacity-80" />
         </div>
@@ -131,27 +131,27 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
         
         {/* Time Insights Section */}
         <div className="w-full grid grid-cols-2 gap-3">
-          <div className="bg-main rounded-xl p-4 text-textOnMain shadow-soft border-2 border-main">
-            <span className="text-[10px] font-semibold uppercase tracking-widest opacity-70">Total Invested</span>
+          <div className="bg-main rounded-xl p-4 text-background shadow-soft border-2 border-main">
+            <span className="text-[10px] font-semibold uppercase tracking-widest opacity-90">Total Invested</span>
             <div className="flex items-baseline gap-1 mt-1">
               <span className="text-3xl font-bold">{timeStats.lifetimeHours}</span>
               <span className="text-sm font-medium opacity-80">hrs</span>
             </div>
           </div>
-          <div className="bg-surface border-2 border-border rounded-xl p-4 shadow-card">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-subtitle">Weekly Momentum</span>
+          <div className="bg-main border-2 border-main rounded-xl p-4 shadow-card">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-background">Weekly Momentum</span>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-2xl font-bold text-textPrimary">{timeStats.currentWeekHours}h</span>
+              <span className="text-2xl font-bold text-background">{timeStats.currentWeekHours}h</span>
               {timeStats.hasPrevData ? (
                 <div className={`flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded-full ${timeStats.isPositiveTrend ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
                   <span className="material-symbols-outlined text-xs">{timeStats.isPositiveTrend ? 'trending_up' : 'trending_down'}</span>
                   {Math.abs(timeStats.weeklyTrend ?? 0)}%
                 </div>
               ) : (
-                <span className="text-[10px] font-bold text-subtitle px-1.5 py-0.5">No data</span>
+                <span className="text-[10px] font-bold text-background/90 px-1.5 py-0.5">No data</span>
               )}
             </div>
-            <p className="text-[9px] text-subtitle mt-1 font-medium">Vs. {timeStats.prevWeekHours}h last week</p>
+            <p className="text-[9px] text-background/90 mt-1 font-medium">Vs. {timeStats.prevWeekHours}h last week</p>
           </div>
         </div>
 
@@ -160,7 +160,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
           <div className="absolute top-4 left-6 flex flex-col z-10">
             <span className="text-xs font-semibold text-subtitle uppercase tracking-wider">Global Level</span>
             <div className="flex items-end gap-2 mt-0.5">
-                <span className="text-4xl font-bold text-main leading-none">{globalLevel}</span>
+                <span className="text-4xl font-bold text-subtitle leading-none">{globalLevel}</span>
                 <div 
                     className="relative w-3 h-8 bg-border rounded-full overflow-hidden mb-0.5" 
                     title={`${xpProgressInLevel} / ${xpRequiredForCurrentLevel} XP to next level`}
@@ -173,8 +173,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
             </div>
           </div>
           <div className="absolute top-4 right-6 flex flex-col items-end text-right z-10">
-            <span className="text-xs font-semibold text-subtitle uppercase tracking-wider">Rank</span>
-            <span className="text-sm font-bold text-interactive">{rankName}</span>
+            <span className="text-xs font-semibold text-textPrimary uppercase tracking-wider">Rank</span>
+            <span className="text-sm font-bold text-subtitle">{rankName}</span>
           </div>
           
           <div className="w-full h-full mt-2">
@@ -207,7 +207,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
         {/* Skill Breakdown */}
         <div className="w-full">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-main font-bold text-lg">Skill Breakdown</h3>
+            <h3 className="text-subtitle font-bold text-lg">Skill Breakdown</h3>
             <button 
               onClick={() => setIsHistoryOpen(true)}
               className="text-xs font-semibold text-interactive transition-colors"
@@ -238,7 +238,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
                     </div>
                   </div>
                   <div className="flex flex-col flex-1 mb-2">
-                    <p className="text-[11px] font-bold text-textPrimary uppercase truncate">{skill.name}</p>
+                    <p className="text-[11px] font-bold text-subtitle uppercase truncate">{skill.name}</p>
                     <div className="flex gap-1">
                       {(skill.streak || 0) > 0 && (
                         <div className="flex items-center text-[9px] font-black text-orange-600 bg-orange-50 px-1 py-0.5 rounded-md leading-none">
@@ -262,7 +262,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
 
         {/* Milestones & Achievements */}
         <div className="w-full">
-          <h3 className="text-main font-bold text-lg mb-4">Milestones</h3>
+          <h3 className="text-subtitle font-bold text-lg mb-4">Milestones</h3>
           <div className="grid grid-cols-1 gap-3">
              {/* Unlocked Section */}
              {unlockedList.length > 0 ? (

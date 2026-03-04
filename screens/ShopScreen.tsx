@@ -93,11 +93,11 @@ const ShopScreen: React.FC<ShopScreenProps> = ({ state, onPurchaseBooster }) => 
   return (
     <div className="flex flex-col w-full pb-32">
       <header className="relative px-6 pt-[max(1rem,env(safe-area-inset-top))] pb-6 pr-14 flex items-center sticky top-0 bg-background/80 backdrop-blur-md z-20">
-        <h1 className="text-3xl font-bold text-main shrink-0">Shop</h1>
+        <h1 className="text-3xl font-bold text-title shrink-0">Shop</h1>
         <div className="flex-1 flex justify-center min-w-0">
-          <div className="bg-surface border-2 border-border shadow-card px-4 py-2 rounded-xl flex items-center gap-2">
+          <div className="bg-background border-2 border-title shadow-card px-4 py-2 rounded-xl flex items-center gap-2">
             <span className="material-symbols-outlined text-interactive font-bold">diamond</span>
-            <span className="text-xl font-black text-textPrimary">{state.totalGems}</span>
+            <span className="text-xl font-black text-subtitle">{state.totalGems}</span>
           </div>
         </div>
         <div className="absolute top-[max(1rem,env(safe-area-inset-top))] right-6 w-10 h-10 flex items-center justify-center">
@@ -108,9 +108,9 @@ const ShopScreen: React.FC<ShopScreenProps> = ({ state, onPurchaseBooster }) => 
       {/* Active boosters summary */}
       {(activeBoosters.weeklyChallenge || activeBoosters.skillFocus || activeBoosters.xpMultiplier || activeBoosters.gemDoublerRemaining > 0 || activeBoosters.gemRushRemaining > 0) && (
         <div className="px-6 mb-6 space-y-2">
-          <h2 className="text-sm font-bold text-txt-secondary uppercase tracking-wider">Active</h2>
+          <h2 className="text-sm font-bold text-subtitle uppercase tracking-wider">Active</h2>
           {activeBoosters.weeklyChallenge && (
-            <div className="bg-main/10 border-2 border-main/20 rounded-xl p-3">
+            <div className="bg-main/10 border-[3px] border-main/20 rounded-xl p-3">
               <div className="flex items-center gap-2 text-main font-semibold text-sm">
                 <span className="material-symbols-outlined text-lg">flag</span>
                 {activeBoosters.weeklyChallenge.description}
@@ -121,7 +121,7 @@ const ShopScreen: React.FC<ShopScreenProps> = ({ state, onPurchaseBooster }) => 
             </div>
           )}
           {activeBoosters.skillFocus && (
-            <div className="bg-surface border-2 border-border rounded-xl p-3 flex items-center justify-between">
+            <div className="bg-surface border-[3px] border-border rounded-xl p-3 flex items-center justify-between">
               <span className="text-sm font-semibold text-textPrimary">Skill Focus 1.2×</span>
               <span className="text-xs text-subtitle">
                 {state.skills.find(s => s.id === activeBoosters.skillFocus!.skillId)?.name ?? 'Skill'} · {daysLeft(activeBoosters.skillFocus.expiresAt)}d left
@@ -129,19 +129,19 @@ const ShopScreen: React.FC<ShopScreenProps> = ({ state, onPurchaseBooster }) => 
             </div>
           )}
           {activeBoosters.xpMultiplier && (
-            <div className="bg-surface border-2 border-border rounded-xl p-3 text-sm text-textPrimary">
+            <div className="bg-surface border-[3px] border-border rounded-xl p-3 text-sm text-textPrimary">
               <span className="font-semibold">{activeBoosters.xpMultiplier.multiplier}× XP</span>
               <span className="text-subtitle ml-1">until {new Date(activeBoosters.xpMultiplier.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
           )}
           {activeBoosters.gemDoublerRemaining > 0 && (
-            <div className="bg-surface border-2 border-border rounded-xl p-3 text-sm text-textPrimary">
+            <div className="bg-surface border-[3px] border-border rounded-xl p-3 text-sm text-textPrimary">
               <span className="font-semibold">2× Gems</span>
               <span className="text-subtitle"> on next {activeBoosters.gemDoublerRemaining} completion(s)</span>
             </div>
           )}
           {activeBoosters.gemRushRemaining > 0 && (
-            <div className="bg-surface border-2 border-border rounded-xl p-3 text-sm text-textPrimary">
+            <div className="bg-surface border-[3px] border-border rounded-xl p-3 text-sm text-textPrimary">
               <span className="font-semibold">Gem Rush</span>
               <span className="text-subtitle"> +5 gems on next {activeBoosters.gemRushRemaining} completion(s)</span>
             </div>
@@ -167,8 +167,8 @@ const ShopScreen: React.FC<ShopScreenProps> = ({ state, onPurchaseBooster }) => 
                 return (
                   <div
                     key={item.id}
-                    className={`bg-surface rounded-xl p-4 border-2 transition-all flex items-center gap-4 ${
-                      isLocked ? 'opacity-60 border-border' : 'border-border shadow-card'
+                    className={`bg-background rounded-xl p-4 border-2 transition-all flex items-center gap-4 ${
+                      isLocked ? 'opacity-60 border-title' : 'border-title shadow-card'
                     }`}
                   >
                     <div

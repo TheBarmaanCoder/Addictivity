@@ -44,16 +44,15 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ state, onUpdateProfile,
     <div className="flex flex-col w-full h-full bg-background pb-24">
       <div className="relative w-full bg-main pt-[max(1rem,env(safe-area-inset-top))] pb-8 px-6 pr-14 transition-colors duration-300">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-textOnMain">Settings</h1>
+          <h1 className="text-3xl font-bold text-background">Settings</h1>
         </div>
         <div className="absolute top-[max(1rem,env(safe-area-inset-top))] right-6 w-10 h-10 flex items-center justify-center">
-          <Logo className="w-10 h-10 text-textOnMain opacity-40" />
+          <Logo className="w-10 h-10 text-background opacity-80" />
         </div>
       </div>
 
       <main className="flex-1 flex flex-col w-full px-6 max-w-4xl mx-auto gap-6 mt-8 overflow-y-auto">
         <section className="flex flex-col gap-3 pb-8">
-            <h2 className="text-main font-bold text-xl mb-1">General</h2>
             {onUpdateProfile && (
               <div className="w-full bg-surface border-2 border-border rounded-xl p-4 shadow-card flex flex-col gap-3">
                 <span className="text-xs font-semibold text-subtitle uppercase tracking-wide">Display name</span>
@@ -114,7 +113,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ state, onUpdateProfile,
             {onLogout && (
               <button 
                 onClick={onLogout}
-                className="w-full min-h-[52px] bg-surface border-2 border-border text-red-500 px-5 py-3 rounded-xl shadow-card flex items-center justify-between active:bg-red-50 transition-colors mt-2"
+                className="w-full min-h-[52px] bg-surface border-[3px] border-border text-red-500 px-5 py-3 rounded-xl shadow-card flex items-center justify-between active:bg-red-50 transition-colors mt-2"
               >
                   <span className="text-[17px] font-semibold">Log Out</span>
                   <span className="material-symbols-outlined text-xl text-red-300">logout</span>

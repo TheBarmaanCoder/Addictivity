@@ -164,13 +164,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
         <div className="w-full flex flex-col gap-4">
           <div className="h-[1px] bg-border w-full" />
           <div className="flex justify-between px-4">
-            <button onClick={() => { impactLight(); selectionChanged(); setIsCalendarOpen(true); }} className="size-11 rounded-full bg-surface flex items-center justify-center text-main active:bg-border active:scale-95 transition-all">
+            <button onClick={() => { impactLight(); selectionChanged(); setIsCalendarOpen(true); }} className="size-11 rounded-full bg-interactive flex items-center justify-center text-background active:opacity-80 active:scale-95 transition-all">
               <span className="material-symbols-outlined text-[24px]">calendar_today</span>
             </button>
-            <button onClick={() => { impactLight(); onNavigate('addTask'); }} className="size-11 rounded-full bg-main flex items-center justify-center text-textOnMain active:opacity-80 active:scale-95 transition-all shadow-soft">
+            <button onClick={() => { impactLight(); onNavigate('addTask'); }} className="size-11 rounded-full bg-interactive flex items-center justify-center text-background active:opacity-80 active:scale-95 transition-all shadow-soft">
               <span className="material-symbols-outlined text-[28px]">add</span>
             </button>
-            <button onClick={() => { impactLight(); selectionChanged(); setIsFilterOpen(true); }} className={`size-11 rounded-full flex items-center justify-center transition-all active:scale-95 ${sortBy === 'skill' ? 'bg-main text-textOnMain active:opacity-80' : 'bg-surface text-main active:bg-border'}`} aria-label="Sort" title="Sort">
+            <button onClick={() => { impactLight(); selectionChanged(); setIsFilterOpen(true); }} className="size-11 rounded-full bg-interactive flex items-center justify-center text-background active:opacity-80 active:scale-95 transition-all" aria-label="Sort" title="Sort">
               <span className="material-symbols-outlined text-[24px]">filter_alt</span>
             </button>
           </div>
@@ -229,10 +229,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
         <div className="w-full flex flex-col gap-4 mt-2">
           <div className="h-[1px] bg-border w-full" />
           <div className="flex items-center justify-between w-full">
-            <h3 className="text-subtitle font-bold text-title">Time Spent</h3>
+            <h3 className="text-subtitle font-bold">Time Spent</h3>
             <div className="flex bg-surface p-1 rounded-xl">
                {(['Week', 'Month', 'Year'] as const).map(view => (
-                  <button key={view} onClick={() => { impactLight(); selectionChanged(); setAnalysisView(view); }} className={`px-3 py-1.5 rounded-lg text-caption font-semibold transition-all ${analysisView === view ? 'bg-surface shadow-card text-main' : 'text-subtitle active:text-subtitle'}`}>
+                  <button key={view} onClick={() => { impactLight(); selectionChanged(); setAnalysisView(view); }} className={`px-3 py-1.5 rounded-lg text-caption font-semibold transition-all ${analysisView === view ? 'bg-surface shadow-card text-main' : 'text-textPrimary active:text-textPrimary'}`}>
                     {view}
                   </button>
                ))}
@@ -240,14 +240,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
           </div>
           <div className="w-full bg-surface border-2 border-border rounded-xl p-6 shadow-soft">
             <div className="mb-4">
-              <p className="text-caption font-semibold text-subtitle mb-1">Total {analysisView === 'Week' ? 'Last 7 Days' : analysisView === 'Month' ? 'This Month' : 'This Year'}</p>
-              <h2 className="text-display font-bold text-textPrimary">{totalHours}<span className="text-body text-subtitle font-medium ml-1">hrs</span></h2>
+              <p className="text-caption font-semibold text-textPrimary mb-1">Total {analysisView === 'Week' ? 'Last 7 Days' : analysisView === 'Month' ? 'This Month' : 'This Year'}</p>
+              <h2 className="text-display font-bold text-textPrimary">{totalHours}<span className="text-body text-textPrimary font-medium ml-1">hrs</span></h2>
             </div>
             <div className="h-48 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                   <XAxis dataKey="id" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: 'var(--subtitle)'}} dy={10} interval={analysisView === 'Month' ? 2 : 0} tickFormatter={(val) => { const item = chartData.find(d => d.id === val); return item ? item.label : val; }} />
-                   <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: 'var(--subtitle)'}} width={25} />
+                   <XAxis dataKey="id" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: 'var(--textPrimary)'}} dy={10} interval={analysisView === 'Month' ? 2 : 0} tickFormatter={(val) => { const item = chartData.find(d => d.id === val); return item ? item.label : val; }} />
+                   <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: 'var(--textPrimary)'}} width={25} />
                    <Tooltip cursor={{fill: 'transparent'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} formatter={(value: number) => [`${value} hrs`, 'Time Spent']} />
                    <Bar dataKey="hours" radius={[4, 4, 0, 0]}>
                       {chartData.map((entry, index) => (

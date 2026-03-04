@@ -58,20 +58,20 @@ const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ state, onUpdateSk
         <button onClick={onBack} className="size-11 flex items-center justify-center text-main rounded-full active:bg-border transition-colors shrink-0" aria-label="Back">
           <span className="material-symbols-outlined text-2xl">arrow_back</span>
         </button>
-        <h1 className="text-2xl font-bold text-title flex-1 min-w-0 text-center">Edit profile</h1>
+        <h1 className="text-2xl font-bold text-title flex-1 min-w-0 text-center">Edit Profile</h1>
         <div className="absolute top-[max(1rem,env(safe-area-inset-top))] right-6 w-10 h-10 flex items-center justify-center">
           <Logo className="w-10 h-10 opacity-80" />
         </div>
       </header>
 
       <main className="flex-1 px-6 overflow-y-auto">
-        <p className="text-sm text-subtitle mb-6">Edit names and icons for your 6 skills. You can reset a skill to zero (all progress for that skill will be lost).</p>
+        <p className="text-sm text-textPrimary mb-6">Edit names and icons for your 6 skills. You can reset a skill to zero (all progress for that skill will be lost).</p>
         <div className="space-y-4">
           {skills.map(skill => {
             const level = getSkillLevel(skill.totalPoints);
             const isEditingName = editingNameId === skill.id;
             return (
-              <div key={skill.id} className="bg-surface border-2 border-border rounded-xl p-4 shadow-card">
+              <div key={skill.id} className="bg-background border-2 border-title rounded-xl p-4 shadow-card">
                 <div className="flex items-center gap-4 mb-3">
                   <button
                     onClick={() => setIconPickerForId(skill.id)}
@@ -96,11 +96,11 @@ const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ state, onUpdateSk
                       </div>
                     ) : (
                       <div className="flex items-center justify-between gap-2">
-                        <h3 className="text-[17px] font-bold text-textPrimary truncate">{skill.name}</h3>
-                        <button onClick={() => handleStartEditName(skill)} className="text-sm font-semibold text-main shrink-0 active:opacity-70">Edit name</button>
+                        <h3 className="text-[17px] font-bold text-title truncate">{skill.name}</h3>
+                        <button onClick={() => handleStartEditName(skill)} className="text-sm font-semibold text-subtitle shrink-0 active:opacity-70">Edit name</button>
                       </div>
                     )}
-                    <p className="text-xs text-subtitle mt-0.5">Level {level} · {(skill.totalMinutes / 60).toFixed(1)}h · {skill.streak || 0} day streak</p>
+                    <p className="text-xs text-title mt-0.5">Level {level} · {(skill.totalMinutes / 60).toFixed(1)}h · {skill.streak || 0} day streak</p>
                   </div>
                 </div>
                 <button
