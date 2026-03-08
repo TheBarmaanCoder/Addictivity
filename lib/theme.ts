@@ -53,27 +53,12 @@ export const THEMES: Theme[] = [
       border: '#3A345B33',
     },
   },
-  {
-    id: 'p3',
-    name: 'Ember',
-    tokens: {
-      main: '#713600',
-      interactive: '#C05800',
-      secondary: '#C05800',
-      ternary: '#38040D',
-      background: '#FFFFFF',
-      surface: '#FFFFFF',
-      title: '#38040D',
-      subtitle: '#C05800',
-      textPrimary: '#FDFBD4',
-      textOnMain: '#FFFFFF',
-      border: '#38040D33',
-    },
-  },
 ];
 
 export function applyTheme(themeId: string): void {
-  const theme = THEMES.find((t) => t.id === themeId) || THEMES[0];
+  // Migrate removed Ember (p3) to Classic Forest
+  const safeId = themeId === 'p3' ? 'p1' : themeId;
+  const theme = THEMES.find((t) => t.id === safeId) || THEMES[0];
   const root = document.documentElement;
   const t = theme.tokens;
 

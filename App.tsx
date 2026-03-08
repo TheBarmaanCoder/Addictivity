@@ -13,6 +13,7 @@ import ProfileScreen from './screens/ProfileScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import ThemeSelectionScreen from './screens/ThemeSelectionScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
+import ContactScreen from './screens/ContactScreen';
 import AuthScreen from './screens/AuthScreen';
 import ShopScreen from './screens/ShopScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
@@ -21,7 +22,7 @@ import RewardToast from './components/RewardToast';
 import UndoToast from './components/UndoToast';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
-const MODAL_VIEWS: ViewType[] = ['addTask', 'themeSelection', 'editProfile'];
+const MODAL_VIEWS: ViewType[] = ['addTask', 'themeSelection', 'editProfile', 'contact'];
 
 const App: React.FC = () => {
   // Auth State
@@ -98,6 +99,16 @@ const App: React.FC = () => {
       .then(() => {
         authUnsubRef.current = onAuthStateChanged((user) => {
           if (!user) {
+            setCurrentUser(null);
+            setIsAuthenticated(false);
+            setAppState(INITIAL_STATE);
+            setIsLoaded(true);
+            return;
+          }
+
+          // Only allow @gmail.com accounts
+          if (!user.email?.toLowerCase().endsWith('@gmail.com')) {
+            firebaseLogOut();
             setCurrentUser(null);
             setIsAuthenticated(false);
             setAppState(INITIAL_STATE);
@@ -832,6 +843,12 @@ const App: React.FC = () => {
             <EditProfileScreen state={appState} onUpdateSkill={handleUpdateSkill} onResetSkill={handleResetSkill} onBack={() => setCurrentView('settings')} />
           </ErrorBoundary>
         );
+      case 'contact':
+        return (
+          <ErrorBoundary>
+            <ContactScreen onBack={() => setCurrentView('settings')} />
+          </ErrorBoundary>
+        );
       case 'shop':
         return (
           <ErrorBoundary>
@@ -863,7 +880,7 @@ const App: React.FC = () => {
           {renderContent()}
         </div>
       </div>
-      {currentView !== 'addTask' && currentView !== 'themeSelection' && currentView !== 'editProfile' && (
+      {currentView !== 'addTask' && currentView !== 'themeSelection' && currentView !== 'editProfile' && currentView !== 'contact' && (
         <div className="absolute bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <BottomNav currentView={currentView} onChangeView={changeView} />
         </div>

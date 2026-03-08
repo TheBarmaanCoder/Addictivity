@@ -102,10 +102,10 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ state, onUpdateProfile,
               </button>
               <div className="h-[0.5px] bg-border ml-5" />
               <button
-                onClick={() => { impactLight(); window.open('mailto:support@addictivity.app?subject=Addictivity%20Feedback', '_blank'); }}
+                onClick={() => { impactLight(); onNavigate('contact'); }}
                 className="w-full min-h-[52px] px-5 py-3 flex items-center justify-between active:bg-background transition-colors"
               >
-                  <span className="text-[17px] font-semibold text-textPrimary">Support / Feedback</span>
+                  <span className="text-[17px] font-semibold text-textPrimary">Support / Contact us</span>
                   <span className="material-symbols-outlined text-xl text-subtitle">chevron_right</span>
               </button>
             </div>
