@@ -35,7 +35,7 @@ const AuthScreen: React.FC = () => {
   if (!isFirebaseConfigured()) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-off-white px-6 w-full max-w-md mx-auto">
-        <Logo className="w-24 h-24 text-forest-green mb-4" />
+        <Logo className="w-24 h-24 mb-4 !text-forest-green" />
         <h1 className="text-2xl font-bold text-forest-green text-center mb-4">Firebase Setup Required</h1>
         <p className="text-txt-secondary text-center text-sm leading-relaxed mb-6">
           Add your Firebase config to <code className="bg-surface px-2 py-1 rounded">.env.local</code>. See{' '}
@@ -56,17 +56,13 @@ const AuthScreen: React.FC = () => {
 
       <div className="w-full flex flex-col items-center z-10">
         <div className="mb-8 flex flex-col items-center animate-in fade-in slide-in-from-top-4 duration-700">
-          <Logo className="w-24 h-24 text-forest-green mb-4" />
+          <Logo className="w-24 h-24 mb-4 !text-forest-green" />
           <h1 className="text-4xl font-bold text-forest-green text-center tracking-tight">Addictivity</h1>
           <p className="text-txt-secondary text-center font-medium mt-2">Gamify your life.</p>
         </div>
 
         <div className="w-full bg-surface p-6 rounded-xl shadow-soft border border-txt-secondary/20 animate-in fade-in zoom-in duration-500">
-          <h2 className="text-xl font-semibold text-txt mb-6 text-center">Sign in with Google</h2>
-
-          <p className="text-sm text-txt-secondary text-center mb-6">
-            Only Gmail accounts are allowed to use Addictivity.
-          </p>
+          <h2 className="text-xl font-semibold text-txt mb-6 text-center">Sign in or sign up</h2>
 
           <button
             type="button"

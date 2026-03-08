@@ -16,6 +16,8 @@ interface HomeScreenProps {
   onEditTask: (task: Task) => void;
 }
 
+const TASK_HINT_STORAGE_KEY = 'addictivity_task_hint_seen';
+
 const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask, onCompleteTask, onEditTask }) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [completingTask, setCompletingTask] = useState<Task | null>(null);
@@ -23,6 +25,20 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState<'recent' | 'skill'>('recent');
   const [analysisView, setAnalysisView] = useState<'Week' | 'Month' | 'Year'>('Week');
+  const [taskHintSeen, setTaskHintSeen] = useState(() => {
+    try {
+      return localStorage.getItem(TASK_HINT_STORAGE_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const markTaskHintSeen = () => {
+    setTaskHintSeen(true);
+    try {
+      localStorage.setItem(TASK_HINT_STORAGE_KEY, 'true');
+    } catch {}
+  };
 
   // Drag Logic for Calendar
   const dragStartX = useRef<number | null>(null);
@@ -211,6 +227,21 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
         </div>
         <p className="text-overline text-textPrimary text-center mt-1">Swipe to change day</p>
 
+        {/* One-time task completion hint */}
+        {filteredTasks.length > 0 && !taskHintSeen && (
+          <div className="flex items-center justify-between gap-3 p-3 bg-interactive/15 border-2 border-interactive/30 rounded-xl mb-2">
+            <p className="text-sm font-medium text-textPrimary flex-1">
+              Swipe left on a task to complete it.
+            </p>
+            <button
+              onClick={() => { impactLight(); markTaskHintSeen(); }}
+              className="text-sm font-semibold text-main shrink-0 px-3 py-1.5 rounded-lg active:bg-interactive/20 transition-colors"
+            >
+              Got it
+            </button>
+          </div>
+        )}
+
         {/* Task List */}
         <div className="w-full flex flex-col min-h-[200px]">
           {filteredTasks.length === 0 ? (
@@ -261,7 +292,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
         </div>
       </div>
 
-      <CompleteTaskModal isOpen={!!completingTask} taskTitle={completingTask?.title || ''} onClose={() => setCompletingTask(null)} onConfirm={(minutes, multiplier) => { if (completingTask) { onCompleteTask(completingTask.id, minutes, multiplier); setCompletingTask(null); } }} />
+      <CompleteTaskModal isOpen={!!completingTask} taskTitle={completingTask?.title || ''} onClose={() => setCompletingTask(null)} onConfirm={(minutes, multiplier) => { if (completingTask) { onCompleteTask(completingTask.id, minutes, multiplier); markTaskHintSeen(); setCompletingTask(null); } }} />
       <MonthCalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} selectedDate={selectedDate} onSelectDate={(d) => { selectionChanged(); setSelectedDate(d); }} tasks={state.tasks} skills={state.skills} />
       <FilterModal isOpen={isFilterOpen} onClose={() => setIsFilterOpen(false)} currentSort={sortBy} onSelectSort={(s) => { impactLight(); setSortBy(s); }} />
     </div>

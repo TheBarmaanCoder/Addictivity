@@ -14,6 +14,7 @@ import SettingsScreen from './screens/SettingsScreen';
 import ThemeSelectionScreen from './screens/ThemeSelectionScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
 import ContactScreen from './screens/ContactScreen';
+import PrivacyPolicyScreen from './screens/PrivacyPolicyScreen';
 import AuthScreen from './screens/AuthScreen';
 import ShopScreen from './screens/ShopScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
@@ -22,7 +23,7 @@ import RewardToast from './components/RewardToast';
 import UndoToast from './components/UndoToast';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
-const MODAL_VIEWS: ViewType[] = ['addTask', 'themeSelection', 'editProfile', 'contact'];
+const MODAL_VIEWS: ViewType[] = ['addTask', 'themeSelection', 'editProfile', 'contact', 'privacy'];
 
 const App: React.FC = () => {
   // Auth State
@@ -775,7 +776,14 @@ const App: React.FC = () => {
     });
   };
 
-  if (!isLoaded) return null;
+  if (!isLoaded) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background">
+        <Logo className="w-20 h-20 text-main mb-4 animate-pulse" />
+        <div className="w-8 h-8 border-2 border-main border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
   if (!isAuthenticated) return <AuthScreen />;
   
   // Show onboarding if not completed
@@ -806,7 +814,7 @@ const App: React.FC = () => {
         );
       case 'addTask':
         return (
-          <ErrorBoundary>
+          <ErrorBoundary onBack={() => { setEditingTask(null); setCurrentView('home'); }}>
             <AddTaskScreen
               skills={appState.skills}
               initialTask={editingTask}
@@ -833,20 +841,26 @@ const App: React.FC = () => {
         );
       case 'themeSelection':
         return (
-          <ErrorBoundary>
+          <ErrorBoundary onBack={() => setCurrentView('settings')}>
             <ThemeSelectionScreen currentThemeId={appState.themeId} onSelectTheme={handleUpdateTheme} onBack={() => setCurrentView('settings')} />
           </ErrorBoundary>
         );
       case 'editProfile':
         return (
-          <ErrorBoundary>
+          <ErrorBoundary onBack={() => setCurrentView('settings')}>
             <EditProfileScreen state={appState} onUpdateSkill={handleUpdateSkill} onResetSkill={handleResetSkill} onBack={() => setCurrentView('settings')} />
           </ErrorBoundary>
         );
       case 'contact':
         return (
-          <ErrorBoundary>
+          <ErrorBoundary onBack={() => setCurrentView('settings')}>
             <ContactScreen onBack={() => setCurrentView('settings')} />
+          </ErrorBoundary>
+        );
+      case 'privacy':
+        return (
+          <ErrorBoundary onBack={() => setCurrentView('settings')}>
+            <PrivacyPolicyScreen onBack={() => setCurrentView('settings')} />
           </ErrorBoundary>
         );
       case 'shop':
@@ -880,7 +894,7 @@ const App: React.FC = () => {
           {renderContent()}
         </div>
       </div>
-      {currentView !== 'addTask' && currentView !== 'themeSelection' && currentView !== 'editProfile' && currentView !== 'contact' && (
+      {currentView !== 'addTask' && currentView !== 'themeSelection' && currentView !== 'editProfile' && currentView !== 'contact' && currentView !== 'privacy' && (
         <div className="absolute bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <BottomNav currentView={currentView} onChangeView={changeView} />
         </div>
