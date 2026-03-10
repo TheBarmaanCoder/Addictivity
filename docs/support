@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Addictivity Support</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin-top: 100px;
+        background-color: #f7f7f7;
+    }
+    .container {
+        background: white;
+        padding: 40px;
+        border-radius: 10px;
+        width: 350px;
+        margin: auto;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    a {
+        color: #007AFF;
+        text-decoration: none;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Support</h1>
+    <p>If you need help with the Addictivity app, please contact us:</p>
+    <p>
+        <a href="mailto:Management.addictivity@gmail.com">
+            Management.addictivity@gmail.com
+        </a>
+    </p>
+</div>
+
+</body>
+</html>
