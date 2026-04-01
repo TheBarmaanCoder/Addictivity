@@ -5,8 +5,9 @@ import {
   type DocumentReference,
 } from 'firebase/firestore';
 import { getFirebaseDb } from './firebase';
-import type { AppState } from '../types';
-import { INITIAL_STATE } from '../constants';
+import type { AppState, Skill } from '../types';
+import { INITIAL_STATE, SHOP_ITEMS } from '../constants';
+import { normalizeSkillTracking } from './skills';
 
 export function getUserDocRef(uid: string): DocumentReference {
   const db = getFirebaseDb();
@@ -67,15 +68,38 @@ function migrateAppState(data: Record<string, unknown>): AppState {
     };
   }
 
+  if (Array.isArray(result.skills) && result.skills.length > 0) {
+    const skills = (result.skills as Skill[]).map((s) => ({
+      ...s,
+      tracking: s.tracking === 'archived' ? ('archived' as const) : ('active' as const),
+    }));
+    result.skills = normalizeSkillTracking(skills);
+  }
+
+  const validShopIds = new Set(SHOP_ITEMS.map((i) => i.id));
+  if (Array.isArray(result.unlockedParkItems)) {
+    const u = (result.unlockedParkItems as string[]).filter((id) => validShopIds.has(id));
+    result.unlockedParkItems = u.length > 0 ? u : ['tree_basic'];
+  }
+  if (Array.isArray(result.selectedParkItems)) {
+    const sel = (result.selectedParkItems as string[]).filter((id) => validShopIds.has(id));
+    result.selectedParkItems = sel.length > 0 ? sel : ['tree_basic'];
+  }
+
   return result as AppState;
+}
+
+/** Firestore rejects `undefined` anywhere in a document; JSON round-trip drops those keys. */
+function sanitizeForFirestore<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
 }
 
 export async function saveUserData(uid: string, state: AppState): Promise<void> {
   const docRef = getUserDocRef(uid);
-  const payload = {
+  const payload = sanitizeForFirestore({
     ...state,
     updatedAt: new Date().toISOString(),
-  };
+  });
   await setDoc(docRef, payload, { merge: true });
 }
 
@@ -90,8 +114,9 @@ export async function createNewUserDoc(
     userName: state.userName,
     onboardingCompleted: state.onboardingCompleted ?? false,
   };
-  await setDoc(docRef, {
+  const payload = sanitizeForFirestore({
     ...fullState,
     updatedAt: new Date().toISOString(),
   });
+  await setDoc(docRef, payload);
 }

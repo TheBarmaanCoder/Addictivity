@@ -6,7 +6,7 @@ import Logo from '../components/Logo';
 
 interface OnboardingScreenProps {
   userName: string;
-  onComplete: (updatedSkills: Skill[]) => void;
+  onComplete: (updatedSkills: Skill[], userName: string) => void;
 }
 
 const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplete }) => {
@@ -16,8 +16,9 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
   // Icon Picker State
   const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
   const [editingSkillIndex, setEditingSkillIndex] = useState<number | null>(null);
+  const [displayName, setDisplayName] = useState('');
 
-  // State for step 4
+  // State for step 5
   const [customSkills, setCustomSkills] = useState<{name: string, icon: string}[]>([
     { name: '', icon: 'palette' },
     { name: '', icon: 'book' },
@@ -29,7 +30,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
     setStep(prev => prev + 1);
   };
   const prevStep = () => { selectionChanged(); setStep(prev => Math.max(1, prev - 1)); };
-  const showBackButton = step >= 2 && step <= 5;
+  const showBackButton = step >= 2 && step <= 6;
 
   const handleFinish = () => {
     impactMedium();
@@ -37,9 +38,9 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
     
     // Construct final skill array
     const fixed: Skill[] = [
-      { id: 's1', name: 'Wisdom', totalMinutes: 0, totalPoints: 0, pointsPerMinute: 10, isCustom: false, color: '#3a6b46', icon: 'school', streak: 0 },
-      { id: 's2', name: 'Discipline', totalMinutes: 0, totalPoints: 0, pointsPerMinute: 10, isCustom: false, color: '#e89635', icon: 'self_improvement', streak: 0 },
-      { id: 's3', name: 'Body', totalMinutes: 0, totalPoints: 0, pointsPerMinute: 10, isCustom: false, color: '#f58c63', icon: 'fitness_center', streak: 0 },
+      { id: 's1', name: 'Wisdom', totalMinutes: 0, totalPoints: 0, pointsPerMinute: 10, isCustom: false, color: '#3a6b46', icon: 'school', streak: 0, importance: 'important', tracking: 'active' },
+      { id: 's2', name: 'Discipline', totalMinutes: 0, totalPoints: 0, pointsPerMinute: 10, isCustom: false, color: '#e89635', icon: 'self_improvement', streak: 0, importance: 'important', tracking: 'active' },
+      { id: 's3', name: 'Body', totalMinutes: 0, totalPoints: 0, pointsPerMinute: 10, isCustom: false, color: '#f58c63', icon: 'fitness_center', streak: 0, importance: 'important', tracking: 'active' },
     ];
 
     const custom: Skill[] = customSkills.map((cs, idx) => ({
@@ -51,11 +52,12 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
       isCustom: true,
       color: idx === 0 ? '#f4a261' : idx === 1 ? '#365c48' : '#1a3b2b',
       icon: cs.icon,
-      streak: 0
+      streak: 0,
+      tracking: 'active' as const,
     }));
 
     setTimeout(() => {
-      onComplete([...fixed, ...custom]);
+      onComplete([...fixed, ...custom], displayName.trim() || userName);
     }, 2000);
   };
 
@@ -90,6 +92,33 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
       case 2:
         return (
           <div className="flex flex-col items-center justify-center flex-1 px-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h2 className="text-2xl font-bold text-textPrimary mb-2 text-center">What should we call you?</h2>
+            <p className="text-subtitle text-sm mb-8 text-center">This is how your name will appear in the app.</p>
+            <div className="w-full mb-12">
+              <input
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                className="w-full h-16 bg-surface border-2 border-border rounded-xl px-5 text-lg text-center font-semibold text-textPrimary placeholder:text-subtitle placeholder:font-normal focus:outline-none focus:border-main focus:ring-2 focus:ring-main/10 transition-all"
+                placeholder="Your name"
+                autoFocus
+              />
+            </div>
+            <button
+              disabled={!displayName.trim()}
+              onClick={nextStep}
+              className={`w-full py-4 font-semibold rounded-xl transition-all ${
+                !displayName.trim()
+                  ? 'bg-background text-subtitle'
+                  : 'bg-main text-textOnMain active:opacity-80 active:scale-[0.98]'
+              }`}
+            >
+              Continue
+            </button>
+          </div>
+        );
+      case 3:
+        return (
+          <div className="flex flex-col items-center justify-center flex-1 px-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <h2 className="text-2xl font-bold text-textPrimary mb-8 text-center">
               If you were consistent for 30 minutes a day, what would you want to grow?
             </h2>
@@ -108,11 +137,11 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
             </button>
           </div>
         );
-      case 3:
+      case 4:
         return (
           <div className="flex flex-col items-center justify-center flex-1 px-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <h2 className="text-2xl font-bold text-textPrimary mb-2 text-center">Core Foundations</h2>
-            <p className="text-subtitle text-sm mb-8 text-center">These always exist and cannot be removed.</p>
+            <p className="text-subtitle text-sm mb-8 text-center">These three skills form the base of your journey.</p>
             
             <div className="flex flex-col gap-4 w-full mb-12">
               {[
@@ -140,7 +169,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
             </button>
           </div>
         );
-      case 4:
+      case 5:
         return (
           <div className="flex flex-col flex-1 px-6 pt-4 animate-in fade-in slide-in-from-right-4 duration-500 overflow-y-auto no-scrollbar pb-10">
             <h2 className="text-2xl font-bold text-textPrimary mb-2">Personal Pursuits</h2>
@@ -193,7 +222,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
             </button>
           </div>
         );
-      case 5:
+      case 6:
         return (
           <div className="flex flex-col items-center justify-center flex-1 px-8 animate-in zoom-in duration-500">
             <h2 className="text-3xl font-black text-textPrimary mb-4 text-center">The Commitment</h2>
@@ -244,7 +273,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
       )}
       {/* Background decoration */}
       <div className="absolute top-0 left-0 w-full h-1 bg-border">
-        <div className="h-full bg-main transition-all duration-500" style={{ width: `${(step / 5) * 100}%` }}></div>
+        <div className="h-full bg-main transition-all duration-500" style={{ width: `${(step / 6) * 100}%` }}></div>
       </div>
 
       {/* Brand logo */}

@@ -112,6 +112,12 @@ export function evaluateMilestones(ctx: MilestoneContext): MilestoneResult {
       case 'inactivity_return':
         isMet = ctx.maxInactivityGapDays >= ach.requirementValue;
         break;
+      case 'all_active_skills_used':
+        // DB has no per-skill archive flag yet: treat every stored skill as tracked (matches single-device client).
+        isMet =
+          ctx.skillTotalMinutes.length >= 3 &&
+          ctx.skillTotalMinutes.every((m) => m > 0);
+        break;
       default:
         break;
     }

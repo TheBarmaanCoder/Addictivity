@@ -11,6 +11,8 @@ export interface Skill {
   streak: number;
   lastSkillCompletedAt?: string; 
   importance?: 'casual' | 'important' | 'core';
+  /** Omitted or `active`: shown on radar, task picker, history. `archived`: progress kept, hidden from those surfaces. */
+  tracking?: 'active' | 'archived';
 }
 
 export interface RecurrenceConfig {
@@ -83,7 +85,7 @@ export interface Achievement {
   title: string;
   description: string;
   icon: string;
-  category: 'total_tasks' | 'total_minutes' | 'skill_level_any' | 'skill_level_count' | 'unique_skills' | 'global_level' | 'park_level' | 'items_unlocked' | 'gems_spent' | 'lifetime_gems' | 'unique_days' | 'streak_days' | 'daily_tasks' | 'daily_minutes' | 'inactivity_return';
+  category: 'total_tasks' | 'total_minutes' | 'skill_level_any' | 'skill_level_count' | 'unique_skills' | 'global_level' | 'park_level' | 'items_unlocked' | 'gems_spent' | 'lifetime_gems' | 'unique_days' | 'streak_days' | 'daily_tasks' | 'daily_minutes' | 'inactivity_return' | 'all_active_skills_used';
   requirementValue: number;
   metaValue?: number; // Used for secondary requirements (e.g. "Level X" in "Y skills" -> metaValue = Level X)
   skillId?: string;

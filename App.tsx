@@ -3,6 +3,8 @@ import { ViewType, AppState, Task, Skill, ShopItem, Achievement, BoosterShopItem
 import { impactMedium, notificationSuccess } from './lib/haptics';
 import { INITIAL_STATE, THEMES, SHOP_ITEMS, ACHIEVEMENTS, BOOSTER_SHOP_ITEMS, WEEKLY_GOALS } from './constants';
 import { applyTheme } from './lib/theme';
+import { addRecurrenceToDueDate, nextRecurringDueDateAfterComplete } from './lib/taskDates';
+import { getActiveSkills, skillsForTaskPicker, MAX_TRACKED_SKILLS, normalizeSkillTracking, MIN_TRACKED_SKILLS } from './lib/skills';
 import { onAuthStateChanged, logOut as firebaseLogOut, getRedirectResultIfAny, type User } from './lib/firebaseAuth';
 import { loadUserData, saveUserData, createNewUserDoc } from './lib/firebaseData';
 import { isFirebaseConfigured } from './lib/firebase';
@@ -22,8 +24,11 @@ import MilestoneCelebration from './components/MilestoneCelebration';
 import RewardToast from './components/RewardToast';
 import UndoToast from './components/UndoToast';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import Logo from './components/Logo';
 
 const MODAL_VIEWS: ViewType[] = ['addTask', 'themeSelection', 'editProfile', 'contact', 'privacy'];
+
+const NEW_SKILL_COLORS = ['#f4a261', '#365c48', '#1a3b2b', '#71557A', '#0ea5e9', '#8b5cf6', '#e89635', '#3a6b46'] as const;
 
 const App: React.FC = () => {
   // Auth State
@@ -78,12 +83,15 @@ const App: React.FC = () => {
         pendingSaveRef.current = null;
       }
     };
-    window.addEventListener('beforeunload', flushPendingSave);
-    document.addEventListener('visibilitychange', () => {
+    const onBeforeUnload = () => flushPendingSave();
+    const onVisibilityChange = () => {
       if (document.visibilityState === 'hidden') flushPendingSave();
-    });
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    document.addEventListener('visibilitychange', onVisibilityChange);
     return () => {
-      window.removeEventListener('beforeunload', flushPendingSave);
+      window.removeEventListener('beforeunload', onBeforeUnload);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, []);
 
@@ -171,9 +179,10 @@ const App: React.FC = () => {
     setCurrentView('home');
   };
 
-  const handleOnboardingComplete = (updatedSkills: Skill[]) => {
+  const handleOnboardingComplete = (updatedSkills: Skill[], userName: string) => {
     setAppState((prev) => ({
       ...prev,
+      userName,
       skills: updatedSkills,
       onboardingCompleted: true,
     }));
@@ -205,6 +214,7 @@ const App: React.FC = () => {
     setCurrentView('home');
   };
 
+  const [isOverlayModalOpen, setIsOverlayModalOpen] = useState(false);
   const [undoDeleteTask, setUndoDeleteTask] = useState<Task | null>(null);
 
   const handleDeleteTask = (taskId: string) => {
@@ -215,6 +225,19 @@ const App: React.FC = () => {
       tasks: prev.tasks.filter(t => t.id !== taskId)
     }));
     setUndoDeleteTask(task);
+  };
+
+  /** Skip one occurrence of a repeating task (no XP); advances due date only. */
+  const handleSkipRepeatOccurrence = (taskId: string) => {
+    setAppState(prev => {
+      const task = prev.tasks.find(t => t.id === taskId);
+      if (!task?.recurrence || !task.dueDate) return prev;
+      const nextDue = addRecurrenceToDueDate(task.dueDate, task.recurrence);
+      return {
+        ...prev,
+        tasks: prev.tasks.map(t => (t.id === taskId ? { ...t, dueDate: nextDue } : t)),
+      };
+    });
   };
 
   const handleUndoDelete = () => {
@@ -359,6 +382,16 @@ const App: React.FC = () => {
             case 'inactivity_return':
                 if (maxInactivityGap >= ach.requirementValue) isMet = true;
                 break;
+            case 'all_active_skills_used': {
+                const activeSkills = state.skills.filter(s => s.tracking !== 'archived');
+                if (
+                  activeSkills.length >= 3 &&
+                  activeSkills.every(s => (s.totalMinutes ?? 0) > 0)
+                ) {
+                  isMet = true;
+                }
+                break;
+            }
         }
 
         if (isMet) {
@@ -381,7 +414,12 @@ const App: React.FC = () => {
   };
 
 
-  const handleCompleteTask = (taskId: string, minutes: number, intensityMultiplier: number = 1.0) => {
+  const handleCompleteTask = (
+    taskId: string,
+    minutes: number,
+    intensityMultiplier: number = 1.0,
+    options?: { endRecurrence?: boolean }
+  ) => {
     setAppState(prev => {
       const task = prev.tasks.find(t => t.id === taskId);
       if (!task) return prev;
@@ -482,22 +520,28 @@ const App: React.FC = () => {
       });
 
       let updatedTasks = prev.tasks.map(t =>
-        t.id === taskId ? { ...t, completed: true, completedAt: now.toISOString(), minutesSpent: minutes } : t
+        t.id === taskId
+          ? {
+              ...t,
+              completed: true,
+              completedAt: now.toISOString(),
+              minutesSpent: minutes,
+              recurrence: options?.endRecurrence ? null : t.recurrence,
+            }
+          : t
       );
 
-      if (task.recurrence && task.dueDate) {
-        const nextDate = new Date(task.dueDate);
-        const { value, unit } = task.recurrence;
-        if (unit === 'Days') nextDate.setDate(nextDate.getDate() + value);
-        if (unit === 'Weeks') nextDate.setDate(nextDate.getDate() + (value * 7));
-        if (unit === 'Months') nextDate.setMonth(nextDate.getMonth() + value);
+      const shouldSpawnNextOccurrence =
+        task.recurrence && task.dueDate && !options?.endRecurrence;
+      if (shouldSpawnNextOccurrence && task.dueDate && task.recurrence) {
+        const nextDueIso = nextRecurringDueDateAfterComplete(task.dueDate, task.recurrence, today);
         const nextTask: Task = {
-          ...task,
           id: crypto.randomUUID(),
-          dueDate: nextDate.toISOString(),
+          title: task.title,
+          skillId: task.skillId,
+          recurrence: task.recurrence,
+          dueDate: nextDueIso,
           completed: false,
-          completedAt: undefined,
-          minutesSpent: undefined
         };
         updatedTasks = [...updatedTasks, nextTask];
       }
@@ -654,21 +698,56 @@ const App: React.FC = () => {
     setAppState(prev => ({ ...prev, ...updates }));
   };
 
-  const handleResetSkill = (skillId: string) => {
-    setAppState(prev => ({
-      ...prev,
-      skills: prev.skills.map(s =>
-        s.id === skillId
-          ? {
-              ...s,
-              totalMinutes: 0,
-              totalPoints: 0,
-              streak: 0,
-              lastSkillCompletedAt: undefined
-            }
-          : s
-      )
-    }));
+  const handleDeleteSkill = (skillId: string) => {
+    impactMedium();
+    setAppState(prev => {
+      const target = prev.skills.find(s => s.id === skillId);
+      if (!target) return prev;
+
+      const activeCount = getActiveSkills(prev.skills).length;
+      const isTargetTracked = target.tracking !== 'archived';
+      if (isTargetTracked && activeCount <= MIN_TRACKED_SKILLS) return prev;
+
+      const remainingSkills = prev.skills.filter(s => s.id !== skillId);
+      if (remainingSkills.length === prev.skills.length) return prev;
+
+      const normalizedSkills = normalizeSkillTracking(remainingSkills);
+      const fallbackSkill = getActiveSkills(normalizedSkills)[0] ?? normalizedSkills[0];
+      if (!fallbackSkill) return prev;
+
+      const updatedTasks = prev.tasks.map(t => {
+        if (t.completed) return t;
+        if (t.skillId !== skillId) return t;
+        return { ...t, skillId: fallbackSkill.id };
+      });
+
+      return {
+        ...prev,
+        skills: normalizedSkills,
+        tasks: updatedTasks,
+      };
+    });
+  };
+
+  const handleAddSkill = () => {
+    impactMedium();
+    setAppState(prev => {
+      const active = getActiveSkills(prev.skills);
+      const tracking: 'active' | 'archived' = active.length < MAX_TRACKED_SKILLS ? 'active' : 'archived';
+      const newSkill: Skill = {
+        id: `skill-${crypto.randomUUID()}`,
+        name: 'New skill',
+        totalMinutes: 0,
+        totalPoints: 0,
+        pointsPerMinute: 10,
+        isCustom: true,
+        color: NEW_SKILL_COLORS[prev.skills.length % NEW_SKILL_COLORS.length],
+        icon: 'palette',
+        streak: 0,
+        tracking,
+      };
+      return { ...prev, skills: [...prev.skills, newSkill] };
+    });
   };
 
   const handlePurchaseBooster = (item: BoosterShopItem, options?: { skillId?: string }) => {
@@ -722,7 +801,12 @@ const App: React.FC = () => {
           boosters.xpMultiplier = { multiplier: 1.25, expiresAt: powerExp.toISOString() };
           break;
         case 'weekly_challenge': {
-          const goal = WEEKLY_GOALS[Math.floor(Math.random() * WEEKLY_GOALS.length)];
+          const activeSkillCount = getActiveSkills(prev.skills).length;
+          const eligibleGoals = WEEKLY_GOALS.filter(
+            g => g.type !== 'skills' || g.target <= activeSkillCount
+          );
+          const pool = eligibleGoals.length > 0 ? eligibleGoals : WEEKLY_GOALS;
+          const goal = pool[Math.floor(Math.random() * pool.length)];
           const startAt = now.toISOString();
           const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
           boosters.weeklyChallenge = {
@@ -804,11 +888,13 @@ const App: React.FC = () => {
               state={appState}
               onNavigate={changeView}
               onDeleteTask={handleDeleteTask}
+              onSkipRepeatOccurrence={handleSkipRepeatOccurrence}
               onCompleteTask={handleCompleteTask}
               onEditTask={(task) => {
                 setEditingTask(task);
                 setCurrentView('addTask');
               }}
+              onModalStateChange={setIsOverlayModalOpen}
             />
           </ErrorBoundary>
         );
@@ -816,7 +902,7 @@ const App: React.FC = () => {
         return (
           <ErrorBoundary onBack={() => { setEditingTask(null); setCurrentView('home'); }}>
             <AddTaskScreen
-              skills={appState.skills}
+              skills={skillsForTaskPicker(appState.skills, editingTask?.skillId)}
               initialTask={editingTask}
               onAddTask={handleAddTask}
               onUpdateTask={handleUpdateTask}
@@ -836,7 +922,7 @@ const App: React.FC = () => {
       case 'settings':
         return (
           <ErrorBoundary>
-            <SettingsScreen state={appState} onUpdateSkill={handleUpdateSkill} onUpdateProfile={handleUpdateProfile} onNavigate={setCurrentView} onLogout={handleLogout} currentUserEmail={currentUserEmail} />
+            <SettingsScreen state={appState} onUpdateProfile={handleUpdateProfile} onNavigate={setCurrentView} onLogout={handleLogout} currentUserEmail={currentUserEmail} />
           </ErrorBoundary>
         );
       case 'themeSelection':
@@ -848,7 +934,7 @@ const App: React.FC = () => {
       case 'editProfile':
         return (
           <ErrorBoundary onBack={() => setCurrentView('settings')}>
-            <EditProfileScreen state={appState} onUpdateSkill={handleUpdateSkill} onResetSkill={handleResetSkill} onBack={() => setCurrentView('settings')} />
+            <EditProfileScreen state={appState} onUpdateSkill={handleUpdateSkill} onDeleteSkill={handleDeleteSkill} onAddSkill={handleAddSkill} onBack={() => setCurrentView('settings')} />
           </ErrorBoundary>
         );
       case 'contact':
@@ -866,7 +952,7 @@ const App: React.FC = () => {
       case 'shop':
         return (
           <ErrorBoundary>
-            <ShopScreen state={appState} onPurchaseBooster={handlePurchaseBooster} />
+            <ShopScreen state={appState} onPurchaseBooster={handlePurchaseBooster} onModalStateChange={setIsOverlayModalOpen} />
           </ErrorBoundary>
         );
       default:
@@ -876,8 +962,10 @@ const App: React.FC = () => {
               state={appState}
               onNavigate={changeView}
               onDeleteTask={handleDeleteTask}
+              onSkipRepeatOccurrence={handleSkipRepeatOccurrence}
               onCompleteTask={handleCompleteTask}
               onEditTask={(task) => { setEditingTask(task); setCurrentView('addTask'); }}
+              onModalStateChange={setIsOverlayModalOpen}
             />
           </ErrorBoundary>
         );
@@ -894,7 +982,7 @@ const App: React.FC = () => {
           {renderContent()}
         </div>
       </div>
-      {currentView !== 'addTask' && currentView !== 'themeSelection' && currentView !== 'editProfile' && currentView !== 'contact' && currentView !== 'privacy' && (
+      {currentView !== 'addTask' && currentView !== 'themeSelection' && currentView !== 'editProfile' && currentView !== 'contact' && currentView !== 'privacy' && !isOverlayModalOpen && (
         <div className="absolute bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <BottomNav currentView={currentView} onChangeView={changeView} />
         </div>

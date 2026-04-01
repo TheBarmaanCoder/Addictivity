@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppState, BoosterShopItem, Skill } from '../types';
 import { BOOSTER_SHOP_ITEMS } from '../constants';
+import { getActiveSkills } from '../lib/skills';
 import Logo from '../components/Logo';
 import { impactMedium, selectionChanged } from '../lib/haptics';
 
 interface ShopScreenProps {
   state: AppState;
   onPurchaseBooster: (item: BoosterShopItem, options?: { skillId?: string }) => void;
+  onModalStateChange?: (isOpen: boolean) => void;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -52,10 +54,16 @@ function isBoosterAlreadyActive(state: AppState, itemId: string): boolean {
   }
 }
 
-const ShopScreen: React.FC<ShopScreenProps> = ({ state, onPurchaseBooster }) => {
+const ShopScreen: React.FC<ShopScreenProps> = ({ state, onPurchaseBooster, onModalStateChange }) => {
   const [skillFocusPickerFor, setSkillFocusPickerFor] = useState<BoosterShopItem | null>(null);
   const [confirmPurchase, setConfirmPurchase] = useState<BoosterShopItem | null>(null);
 
+  const anyModalOpen = !!confirmPurchase || !!skillFocusPickerFor;
+  useEffect(() => {
+    onModalStateChange?.(anyModalOpen);
+  }, [anyModalOpen, onModalStateChange]);
+
+  const activeSkills = getActiveSkills(state.skills);
   const globalLevel = Math.floor(Math.sqrt(state.skills.reduce((acc, s) => acc + s.totalPoints, 0) / 40)) + 1;
   const categories = Array.from(new Set(BOOSTER_SHOP_ITEMS.map(i => i.category)));
 
@@ -220,7 +228,7 @@ const ShopScreen: React.FC<ShopScreenProps> = ({ state, onPurchaseBooster }) => 
       {confirmPurchase && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setConfirmPurchase(null)} />
-          <div className="relative bg-surface w-full max-w-sm rounded-t-3xl sm:rounded-3xl shadow-soft p-6 animate-in slide-in-from-bottom-10 duration-300">
+          <div className="relative bg-surface w-full max-w-sm rounded-t-3xl sm:rounded-3xl shadow-soft p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] animate-in slide-in-from-bottom-10 duration-300">
             <h3 className="text-lg font-semibold text-textPrimary mb-2">Confirm purchase?</h3>
             <p className="text-sm text-subtitle mb-4">
               Spend <strong>{confirmPurchase.cost} gems</strong> on {confirmPurchase.name}?
@@ -252,7 +260,7 @@ const ShopScreen: React.FC<ShopScreenProps> = ({ state, onPurchaseBooster }) => 
             <h3 className="text-lg font-semibold text-main px-6 pb-2">Choose skill for 1.2× XP (7 days)</h3>
             <p className="text-sm text-subtitle px-6 pb-4">{skillFocusPickerFor.description}</p>
             <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-2">
-              {state.skills.map(skill => (
+              {activeSkills.map(skill => (
                 <button
                   key={skill.id}
                   onClick={() => handleSkillSelect(skill)}

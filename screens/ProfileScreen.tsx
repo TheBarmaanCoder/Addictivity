@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { AppState, Skill, Task, Achievement } from '../types';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, PolarRadiusAxis } from 'recharts';
 import { ACHIEVEMENTS } from '../constants';
+import { getActiveSkills } from '../lib/skills';
 import HistoryModal from '../components/HistoryModal';
 import Logo from '../components/Logo';
 
@@ -103,13 +104,15 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
     };
   }, [state.tasks, state.skills]);
 
+  const activeSkills = useMemo(() => getActiveSkills(state.skills), [state.skills]);
+
   // --- RADAR DATA ---
-  const maxSkillXP = state.skills.length ? Math.max(...state.skills.map(s => s.totalPoints), 1) : 1;
+  const maxSkillXP = activeSkills.length ? Math.max(...activeSkills.map(s => s.totalPoints), 1) : 1;
   const maxSkillLevel = getSkillLevel(maxSkillXP);
   const chartMax = 120 * Math.pow(maxSkillLevel + 1, 2);
-  const allSkillsZero = state.skills.every(s => (s.totalPoints ?? 0) === 0);
+  const allSkillsZero = activeSkills.every(s => (s.totalPoints ?? 0) === 0);
 
-  const radarData = state.skills.map(skill => ({
+  const radarData = activeSkills.map(skill => ({
     subject: skill.name,
     A: skill.totalPoints,
     fullMark: chartMax, 
@@ -156,7 +159,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
         </div>
 
         {/* Radar Chart Card */}
-        <div className="w-full bg-surface rounded-xl shadow-card p-4 flex flex-col items-center relative border-2 border-border h-[360px]">
+        <div className="w-full bg-surface rounded-xl shadow-card p-4 flex flex-col items-center relative border-2 border-border h-[360px] outline-none select-none" style={{ WebkitTapHighlightColor: 'transparent' }}>
           <div className="absolute top-4 left-6 flex flex-col z-10">
             <span className="text-xs font-semibold text-subtitle uppercase tracking-wider">Global Level</span>
             <div className="flex items-end gap-2 mt-0.5">
@@ -216,7 +219,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
             </button>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            {state.skills.map(skill => {
+            {activeSkills.map(skill => {
               const currentLvl = getSkillLevel(skill.totalPoints);
               const skillNextLvlXP = getSkillNextLevelXP(currentLvl);
               const skillStartLvlXP = getSkillNextLevelXP(currentLvl - 1);
@@ -303,7 +306,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ state }) => {
       <HistoryModal 
         isOpen={isHistoryOpen} 
         onClose={() => setIsHistoryOpen(false)} 
-        state={state} 
+        state={state}
+        chartSkills={activeSkills}
       />
     </div>
   );

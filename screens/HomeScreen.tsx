@@ -1,26 +1,45 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { AppState, Task } from '../types';
 import { selectionChanged, impactLight } from '../lib/haptics';
 import SwipeableTaskItem from '../components/SwipeableTaskItem';
 import CompleteTaskModal from '../components/CompleteTaskModal';
+import RepeatTaskChoiceModal from '../components/RepeatTaskChoiceModal';
+import { startOfDay, isSameCalendarDay } from '../lib/taskDates';
 import MonthCalendarModal from '../components/MonthCalendarModal';
 import FilterModal from '../components/FilterModal';
 import Logo from '../components/Logo';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { getActiveSkills } from '../lib/skills';
 
 interface HomeScreenProps {
   state: AppState;
   onNavigate: (view: any) => void;
   onDeleteTask: (taskId: string) => void;
-  onCompleteTask: (taskId: string, minutes: number, multiplier: number) => void;
+  onSkipRepeatOccurrence: (taskId: string) => void;
+  onCompleteTask: (taskId: string, minutes: number, multiplier: number, options?: { endRecurrence?: boolean }) => void;
   onEditTask: (task: Task) => void;
+  onModalStateChange?: (isOpen: boolean) => void;
 }
 
-const TASK_HINT_STORAGE_KEY = 'addictivity_task_hint_seen';
+const DAY_STRIP_RANGE = 60;
+const VISIBLE_DAYS = 7;
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask, onCompleteTask, onEditTask }) => {
+const TASK_HINT_STORAGE_KEY = 'addictivity_task_hint_seen';
+const DAY_STRIP_HINT_STORAGE_KEY = 'addictivity_day_strip_hint_seen';
+
+const HomeScreen: React.FC<HomeScreenProps> = ({
+  state,
+  onNavigate,
+  onDeleteTask,
+  onSkipRepeatOccurrence,
+  onCompleteTask,
+  onEditTask,
+  onModalStateChange,
+}) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [completingTask, setCompletingTask] = useState<Task | null>(null);
+  const [pendingRecurrenceEnd, setPendingRecurrenceEnd] = useState(false);
+  const [repeatChoice, setRepeatChoice] = useState<{ action: 'complete' | 'delete'; task: Task } | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState<'recent' | 'skill'>('recent');
@@ -32,6 +51,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
       return false;
     }
   });
+  const [dayStripHintSeen, setDayStripHintSeen] = useState(() => {
+    try {
+      return localStorage.getItem(DAY_STRIP_HINT_STORAGE_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const anyModalOpen = !!completingTask || isCalendarOpen || isFilterOpen || !!repeatChoice;
+  useEffect(() => {
+    onModalStateChange?.(anyModalOpen);
+  }, [anyModalOpen, onModalStateChange]);
 
   const markTaskHintSeen = () => {
     setTaskHintSeen(true);
@@ -39,71 +70,114 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
       localStorage.setItem(TASK_HINT_STORAGE_KEY, 'true');
     } catch {}
   };
-
-  // Drag Logic for Calendar
-  const dragStartX = useRef<number | null>(null);
-  const isDraggingRef = useRef(false);
-
-  const handleDragStart = (clientX: number) => {
-    dragStartX.current = clientX;
-    isDraggingRef.current = false;
+  const markDayStripHintSeen = () => {
+    setDayStripHintSeen(true);
+    try {
+      localStorage.setItem(DAY_STRIP_HINT_STORAGE_KEY, 'true');
+    } catch {}
   };
 
-  const handleDragMove = (clientX: number) => {
-    if (dragStartX.current === null) return;
-    const diff = clientX - dragStartX.current;
-    
-    // Sensitivity threshold (pixels to move 1 day)
-    const threshold = 25; 
+  // Smooth horizontal day strip
+  const todayAnchor = useMemo(() => {
+    const d = new Date(); d.setHours(0, 0, 0, 0); return d;
+  }, []);
 
-    if (Math.abs(diff) > threshold) {
-        isDraggingRef.current = true;
-        const direction = -Math.sign(diff); // Drag Left (-diff) -> Future (+1 day)
-        impactLight();
-        selectionChanged();
-        setSelectedDate(prev => {
-            const d = new Date(prev);
-            d.setDate(d.getDate() + direction);
-            return d;
-        });
-        dragStartX.current = clientX; // Reset anchor for continuous scrubbing
-    }
-  };
-
-  const handleDragEnd = () => {
-    dragStartX.current = null;
-    // Delay resetting dragging flag so clicks don't fire immediately after a drag
-    setTimeout(() => {
-        isDraggingRef.current = false;
-    }, 100);
-  };
-
-  const calendarDays = useMemo(() => {
-    const days = [];
-    for (let i = -3; i <= 3; i++) {
-      const d = new Date(selectedDate);
-      d.setDate(selectedDate.getDate() + i);
+  const stripDays = useMemo(() => {
+    const days: Date[] = [];
+    for (let i = -DAY_STRIP_RANGE; i <= DAY_STRIP_RANGE; i++) {
+      const d = new Date(todayAnchor);
+      d.setDate(todayAnchor.getDate() + i);
       days.push(d);
     }
     return days;
-  }, [selectedDate]);
+  }, [todayAnchor]);
+
+  const stripRef = useRef<HTMLDivElement>(null);
+  const isProgrammaticScroll = useRef(false);
+  const selectedDateRef = useRef(selectedDate);
+  selectedDateRef.current = selectedDate;
+  const hasScrolledInit = useRef(false);
+  const lastTickedIndexRef = useRef<number | null>(null);
+
+  const scrollToDateIndex = useCallback((index: number, smooth: boolean) => {
+    const el = stripRef.current;
+    if (!el || stripDays.length === 0) return;
+    const cellW = el.scrollWidth / stripDays.length;
+    const left = Math.max(0, Math.min(index * cellW + cellW / 2 - el.clientWidth / 2, el.scrollWidth - el.clientWidth));
+    isProgrammaticScroll.current = true;
+    lastTickedIndexRef.current = index;
+    el.scrollTo({ left, behavior: smooth ? 'smooth' : 'instant' as ScrollBehavior });
+    setTimeout(() => { isProgrammaticScroll.current = false; }, smooth ? 500 : 100);
+  }, [stripDays.length]);
+
+  useEffect(() => {
+    if (hasScrolledInit.current) return;
+    const idx = stripDays.findIndex(d => d.toDateString() === selectedDate.toDateString());
+    if (idx >= 0 && stripRef.current) {
+      hasScrolledInit.current = true;
+      lastTickedIndexRef.current = idx;
+      requestAnimationFrame(() => scrollToDateIndex(idx, false));
+    }
+  }, [stripDays, selectedDate, scrollToDateIndex]);
+
+  const handleStripScroll = useCallback(() => {
+    if (isProgrammaticScroll.current) return;
+    const el = stripRef.current;
+    if (!el || stripDays.length === 0) return;
+    const cellW = el.scrollWidth / stripDays.length;
+    const centerX = el.scrollLeft + el.clientWidth / 2;
+    const idx = Math.round(centerX / cellW - 0.5);
+    const clamped = Math.max(0, Math.min(idx, stripDays.length - 1));
+    if (clamped !== lastTickedIndexRef.current) {
+      lastTickedIndexRef.current = clamped;
+      impactLight();
+      setSelectedDate(stripDays[clamped]);
+    }
+  }, [stripDays]);
+
+  const handleCalendarDateSelect = useCallback((d: Date) => {
+    selectionChanged();
+    setSelectedDate(d);
+    const idx = stripDays.findIndex(sd => sd.toDateString() === d.toDateString());
+    if (idx >= 0) scrollToDateIndex(idx, true);
+  }, [stripDays, scrollToDateIndex]);
 
   const filteredTasks = useMemo(() => {
+    const selectedDayStart = startOfDay(selectedDate);
+    const viewingToday = isSameCalendarDay(selectedDate, new Date());
+
     let tasks = state.tasks.filter(t => {
       if (t.completed) return false;
       if (!t.dueDate) return true;
-      const taskDate = new Date(t.dueDate);
-      return taskDate.toDateString() === selectedDate.toDateString();
+      const taskDay = startOfDay(new Date(t.dueDate));
+      if (taskDay.getTime() === selectedDayStart.getTime()) return true;
+      if (viewingToday && taskDay.getTime() < selectedDayStart.getTime()) return true;
+      return false;
     });
 
-    if (sortBy === 'skill') {
-        tasks = [...tasks].sort((a, b) => {
-           const sA = state.skills.find(s => s.id === a.skillId);
-           const sB = state.skills.find(s => s.id === b.skillId);
-           return (sA?.name || '').localeCompare(sB?.name || '');
-       });
-    }
-    // 'recent' uses default array order (insertion order)
+    const isOverdueOnTodayList = (t: Task) =>
+      !!t.dueDate && viewingToday && startOfDay(new Date(t.dueDate)) < selectedDayStart;
+
+    const bucket = (t: Task) => {
+      if (!t.dueDate) return 2;
+      if (isOverdueOnTodayList(t)) return 0;
+      return 1;
+    };
+
+    tasks = [...tasks].sort((a, b) => {
+      const ba = bucket(a);
+      const bb = bucket(b);
+      if (ba !== bb) return ba - bb;
+      if (ba === 0 && a.dueDate && b.dueDate) {
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      }
+      if (sortBy === 'skill') {
+        const sA = state.skills.find(s => s.id === a.skillId);
+        const sB = state.skills.find(s => s.id === b.skillId);
+        return (sA?.name || '').localeCompare(sB?.name || '');
+      }
+      return 0;
+    });
 
     return tasks;
   }, [state.tasks, selectedDate, sortBy, state.skills]);
@@ -146,9 +220,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
 
   const totalHours = chartData.reduce((acc, item) => acc + item.hours, 0).toFixed(1);
 
-  const maxStreak = useMemo(() => Math.max(0, ...state.skills.map(s => s.streak || 0)), [state.skills]);
+  const selectedDayStartForList = startOfDay(selectedDate);
+  const viewingTodayForList = isSameCalendarDay(selectedDate, new Date());
+
+  const activeSkills = useMemo(() => getActiveSkills(state.skills), [state.skills]);
+  const maxStreak = useMemo(() => Math.max(0, ...activeSkills.map(s => s.streak || 0)), [activeSkills]);
   const todayStr = new Date().toDateString();
-  const completedToday = state.skills.some(s => s.lastSkillCompletedAt && new Date(s.lastSkillCompletedAt).toDateString() === todayStr);
+  const completedToday = activeSkills.some(s => s.lastSkillCompletedAt && new Date(s.lastSkillCompletedAt).toDateString() === todayStr);
   const showStreakBanner = maxStreak > 0;
 
   return (
@@ -192,40 +270,65 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
           </div>
         </div>
 
-        {/* Draggable Calendar Strip */}
-        <div 
-          className="flex justify-between items-center bg-surface p-2 rounded-xl shadow-sm border-2 border-border touch-none select-none cursor-grab active:cursor-grabbing overflow-hidden"
-          onMouseDown={(e) => handleDragStart(e.clientX)}
-          onMouseMove={(e) => handleDragMove(e.clientX)}
-          onMouseUp={handleDragEnd}
-          onMouseLeave={handleDragEnd}
-          onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
-          onTouchMove={(e) => handleDragMove(e.touches[0].clientX)}
-          onTouchEnd={handleDragEnd}
-        >
-          {calendarDays.map((date, i) => {
-            const isSelected = date.toDateString() === selectedDate.toDateString();
-            const isToday = date.toDateString() === new Date().toDateString();
-            const hasTask = state.tasks.some(t => t.dueDate && new Date(t.dueDate).toDateString() === date.toDateString() && !t.completed);
-            return (
-              <button 
-                key={i} 
-                onClick={() => {
-                   if (!isDraggingRef.current) {
-                     selectionChanged();
-                     setSelectedDate(date);
-                   }
-                }}
-                className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] h-14 rounded-xl transition-all border-2 ${isSelected ? 'bg-main text-background shadow-soft border-main' : 'text-textPrimary active:bg-border border-transparent'}`}
-              >
-                <span className="text-overline font-bold uppercase pointer-events-none">{date.toLocaleDateString('en-US', { weekday: 'narrow' })}</span>
-                <span className={`text-body font-bold pointer-events-none ${isToday && !isSelected ? 'text-interactive' : ''}`}>{date.getDate()}</span>
-                {hasTask && !isSelected && <div className="w-1 h-1 bg-interactive rounded-full mt-0.5 pointer-events-none"></div>}
-              </button>
-            );
-          })}
+        {/* Smooth Scrollable Day Strip — fixed center window, strip scrolls underneath */}
+        <div className="relative rounded-xl shadow-sm border-2 border-border bg-surface p-1 min-h-[60px]">
+          <div
+            ref={stripRef}
+            className="flex overflow-x-auto no-scrollbar"
+            style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' as any }}
+            onScroll={handleStripScroll}
+          >
+            {stripDays.map((date, i) => {
+              const isToday = date.toDateString() === todayAnchor.toDateString();
+              const dayStart = startOfDay(date);
+              const todayStart = startOfDay(todayAnchor);
+              const hasTask = state.tasks.some(t => {
+                if (t.completed || !t.dueDate) return false;
+                const td = startOfDay(new Date(t.dueDate));
+                if (td.getTime() === dayStart.getTime()) return true;
+                if (isToday && td.getTime() < todayStart.getTime()) return true;
+                return false;
+              });
+              return (
+                <div key={i} className="shrink-0" style={{ width: `${100 / VISIBLE_DAYS}%`, scrollSnapAlign: 'center' }}>
+                  <button
+                    onClick={() => {
+                      selectionChanged();
+                      setSelectedDate(date);
+                      scrollToDateIndex(i, true);
+                    }}
+                    className="flex flex-col items-center justify-center w-full min-h-[56px] rounded-xl transition-colors border-2 border-transparent text-textPrimary touch-manipulation"
+                  >
+                    <span className="text-overline font-bold uppercase">{date.toLocaleDateString('en-US', { month: 'short' })}</span>
+                    <span className={`text-body font-bold ${isToday ? 'text-interactive' : ''}`}>{date.getDate()}</span>
+                    {hasTask && <div className="w-1 h-1 bg-interactive rounded-full mt-0.5"></div>}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+          {/* Fixed center window — only this is highlighted; strip scrolls underneath */}
+          <div
+            className="pointer-events-none absolute inset-0 flex items-center justify-center p-1"
+            aria-hidden
+          >
+            <div
+              className="min-h-[56px] rounded-xl border-2 border-main bg-main/15 shadow-soft"
+              style={{ width: `${100 / VISIBLE_DAYS}%` }}
+            />
+          </div>
         </div>
-        <p className="text-overline text-textPrimary text-center mt-1">Swipe to change day</p>
+        {!dayStripHintSeen && (
+          <div className="flex items-center justify-between gap-3 p-3 bg-interactive/15 border-2 border-interactive/30 rounded-xl mt-2">
+            <p className="text-sm font-medium text-textPrimary flex-1">Swipe to change day</p>
+            <button
+              onClick={() => { impactLight(); markDayStripHintSeen(); }}
+              className="text-sm font-semibold text-main shrink-0 px-3 py-1.5 rounded-lg active:bg-interactive/20 transition-colors"
+            >
+              Got it
+            </button>
+          </div>
+        )}
 
         {/* One-time task completion hint */}
         {filteredTasks.length > 0 && !taskHintSeen && (
@@ -250,9 +353,32 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
               <p>No tasks for this day.</p>
             </div>
           ) : (
-            filteredTasks.map(task => (
-              <SwipeableTaskItem key={task.id} task={task} skill={state.skills.find(s => s.id === task.skillId)} onDelete={() => onDeleteTask(task.id)} onComplete={() => setCompletingTask(task)} onEdit={onEditTask} />
-            ))
+            filteredTasks.map(task => {
+              const isOverdueRollup =
+                !!task.dueDate &&
+                viewingTodayForList &&
+                startOfDay(new Date(task.dueDate)) < selectedDayStartForList;
+              return (
+                <SwipeableTaskItem
+                  key={task.id}
+                  task={task}
+                  skill={state.skills.find(s => s.id === task.skillId)}
+                  isOverdueRollup={isOverdueRollup}
+                  onDelete={() => {
+                    if (task.recurrence) setRepeatChoice({ action: 'delete', task });
+                    else onDeleteTask(task.id);
+                  }}
+                  onComplete={() => {
+                    if (task.recurrence) setRepeatChoice({ action: 'complete', task });
+                    else {
+                      setPendingRecurrenceEnd(false);
+                      setCompletingTask(task);
+                    }
+                  }}
+                  onEdit={onEditTask}
+                />
+              );
+            })
           )}
         </div>
 
@@ -292,8 +418,55 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ state, onNavigate, onDeleteTask
         </div>
       </div>
 
-      <CompleteTaskModal isOpen={!!completingTask} taskTitle={completingTask?.title || ''} onClose={() => setCompletingTask(null)} onConfirm={(minutes, multiplier) => { if (completingTask) { onCompleteTask(completingTask.id, minutes, multiplier); markTaskHintSeen(); setCompletingTask(null); } }} />
-      <MonthCalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} selectedDate={selectedDate} onSelectDate={(d) => { selectionChanged(); setSelectedDate(d); }} tasks={state.tasks} skills={state.skills} />
+      <CompleteTaskModal
+        isOpen={!!completingTask}
+        taskTitle={completingTask?.title || ''}
+        onClose={() => {
+          setCompletingTask(null);
+          setPendingRecurrenceEnd(false);
+        }}
+        onConfirm={(minutes, multiplier) => {
+          if (completingTask) {
+            onCompleteTask(completingTask.id, minutes, multiplier, {
+              endRecurrence: pendingRecurrenceEnd,
+            });
+            markTaskHintSeen();
+            setCompletingTask(null);
+            setPendingRecurrenceEnd(false);
+          }
+        }}
+      />
+      <RepeatTaskChoiceModal
+        isOpen={!!repeatChoice}
+        taskTitle={repeatChoice?.task.title || ''}
+        action={repeatChoice?.action || 'complete'}
+        onClose={() => setRepeatChoice(null)}
+        onChooseThisOccurrence={() => {
+          const t = repeatChoice?.task;
+          const act = repeatChoice?.action;
+          if (!t || !act) return;
+          setRepeatChoice(null);
+          if (act === 'delete') {
+            onSkipRepeatOccurrence(t.id);
+            return;
+          }
+          setPendingRecurrenceEnd(false);
+          setCompletingTask(t);
+        }}
+        onChooseForever={() => {
+          const t = repeatChoice?.task;
+          const act = repeatChoice?.action;
+          if (!t || !act) return;
+          setRepeatChoice(null);
+          if (act === 'delete') {
+            onDeleteTask(t.id);
+            return;
+          }
+          setPendingRecurrenceEnd(true);
+          setCompletingTask(t);
+        }}
+      />
+      <MonthCalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} selectedDate={selectedDate} onSelectDate={handleCalendarDateSelect} tasks={state.tasks} skills={state.skills} />
       <FilterModal isOpen={isFilterOpen} onClose={() => setIsFilterOpen(false)} currentSort={sortBy} onSelectSort={(s) => { impactLight(); setSortBy(s); }} />
     </div>
   );

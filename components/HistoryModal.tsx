@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { AppState, Skill, Task } from '../types';
+import { AppState, Skill } from '../types';
 import { 
   LineChart, 
   Line, 
@@ -15,12 +15,15 @@ interface HistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   state: AppState;
+  /** If omitted, all skills are charted (includes archived). Prefer active-only from Profile. */
+  chartSkills?: Skill[];
 }
 
 type TimeScale = 'Day' | 'Month' | 'Year';
 
-const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, state }) => {
+const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, state, chartSkills }) => {
   const [scale, setScale] = useState<TimeScale>('Day');
+  const skillsForChart = chartSkills ?? state.skills;
 
   const chartData = useMemo(() => {
     const completedTasks = state.tasks
@@ -35,7 +38,7 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, state }) =
 
     // Map skill IDs to current running totals
     const runningTotals: Record<string, number> = {};
-    state.skills.forEach(s => { runningTotals[s.id] = 0; });
+    skillsForChart.forEach(s => { runningTotals[s.id] = 0; });
 
     if (scale === 'Day') {
       // Last 30 days or since beginning
@@ -52,7 +55,7 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, state }) =
         });
 
         const entry: any = { name: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) };
-        state.skills.forEach(s => {
+        skillsForChart.forEach(s => {
           entry[s.name] = parseFloat((runningTotals[s.id] / 60).toFixed(2));
         });
         data.push(entry);
@@ -71,7 +74,7 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, state }) =
         });
 
         const entry: any = { name: new Date(currentYear, m).toLocaleDateString('en-US', { month: 'short' }) };
-        state.skills.forEach(s => {
+        skillsForChart.forEach(s => {
           entry[s.name] = parseFloat((runningTotals[s.id] / 60).toFixed(2));
         });
         data.push(entry);
@@ -87,7 +90,7 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, state }) =
         });
 
         const entry: any = { name: y.toString() };
-        state.skills.forEach(s => {
+        skillsForChart.forEach(s => {
           entry[s.name] = parseFloat((runningTotals[s.id] / 60).toFixed(2));
         });
         data.push(entry);
@@ -95,7 +98,7 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, state }) =
     }
 
     return data;
-  }, [state.tasks, state.skills, scale]);
+  }, [state.tasks, skillsForChart, scale]);
 
   if (!isOpen) return null;
 
@@ -171,7 +174,7 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose, state }) =
                     iconType="circle"
                     wrapperStyle={{ paddingTop: '20px', fontSize: '11px', fontWeight: 'bold' }}
                   />
-                  {state.skills.map(skill => (
+                  {skillsForChart.map(skill => (
                     <Line
                       key={skill.id}
                       type="monotone"

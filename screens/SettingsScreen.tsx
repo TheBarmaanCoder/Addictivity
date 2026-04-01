@@ -1,38 +1,19 @@
 import React, { useState } from 'react';
-import { AppState, Skill, ViewType } from '../types';
+import { AppState, ViewType } from '../types';
 import Logo from '../components/Logo';
 import { impactLight } from '../lib/haptics';
 
 interface SettingsScreenProps {
   state: AppState;
-  onUpdateSkill: (id: string, updates: Partial<Skill>) => void;
   onUpdateProfile?: (updates: Partial<AppState>) => void;
   onNavigate: (view: ViewType) => void;
   onLogout?: () => void;
   currentUserEmail?: string | null;
 }
 
-const SettingsScreen: React.FC<SettingsScreenProps> = ({ state, onUpdateProfile, onNavigate, onLogout, currentUserEmail }) => {
+const SettingsScreen: React.FC<SettingsScreenProps> = ({ state, onUpdateProfile, onNavigate, onLogout, currentUserEmail: _currentUserEmail }) => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState(state.userName);
-  
-  const handleBackup = () => {
-    const backupPackage = {
-      timestamp: new Date().toISOString(),
-      exportVersion: 1,
-      userEmail: currentUserEmail ?? 'unknown',
-      data: state,
-    };
-    const dataStr =
-      'data:text/json;charset=utf-8,' +
-      encodeURIComponent(JSON.stringify(backupPackage, null, 2));
-    const a = document.createElement('a');
-    a.setAttribute('href', dataStr);
-    a.setAttribute('download', `addictivity_backup_${new Date().toISOString().split('T')[0]}.json`);
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
 
   const handleSaveName = () => {
     const trimmed = editNameValue.trim();
@@ -91,14 +72,6 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ state, onUpdateProfile,
               >
                   <span className="text-[17px] font-semibold text-textPrimary">UI Customization</span>
                   <span className="material-symbols-outlined text-xl text-subtitle">chevron_right</span>
-              </button>
-              <div className="h-[0.5px] bg-border ml-5" />
-              <button 
-                onClick={handleBackup}
-                className="w-full min-h-[52px] px-5 py-3 flex items-center justify-between active:bg-background transition-colors"
-              >
-                  <span className="text-[17px] font-semibold text-textPrimary">Backup Data</span>
-                  <span className="material-symbols-outlined text-xl text-subtitle">download</span>
               </button>
               <div className="h-[0.5px] bg-border ml-5" />
               <button
